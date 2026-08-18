@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8"/>
-    <title>Support Ticket Received â€” CMS</title>
+    <title>Support Ticket Received — CMS</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
@@ -20,25 +20,25 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>ðŸŽ« Support Ticket Created</h1>
+        <h1>🎫 Support Ticket Created</h1>
     </div>
     <div class="body">
         <p>Hi there,</p>
         <p>Your support ticket has been received and our team is on it. Here are the details:</p>
         <div class="ticket-box">
             <div class="ticket-row"><span>Ticket #</span><span th:text="${ticketId}">TICK-001</span></div>
-            <div class="ticket-row"><span>Subject</span><span th:text="${subject}">â€”</span></div>
+            <div class="ticket-row"><span>Subject</span><span th:text="${subject}">—</span></div>
             <div class="ticket-row"><span>Priority</span><span th:text="${priority}">MEDIUM</span></div>
-            <div class="ticket-row"><span>Category</span><span th:text="${category}">â€”</span></div>
+            <div class="ticket-row"><span>Category</span><span th:text="${category}">—</span></div>
             <div class="ticket-row"><span>Status</span><span>OPEN</span></div>
-            <div class="ticket-row"><span>Created</span><span th:text="${createdAt}">â€”</span></div>
+            <div class="ticket-row"><span>Created</span><span th:text="${createdAt}">—</span></div>
         </div>
         <p><strong>Your description:</strong></p>
-        <div class="ticket-desc" th:text="${description}">â€”</div>
+        <div class="ticket-desc" th:text="${description}">—</div>
         <p style="margin-top:20px;">We'll update you as soon as your ticket is assigned to an agent. Typical response time is within 24 hours.</p>
         <p style="font-size:14px; color:#888; margin-top:28px;">Regards,<br/><strong style="color:#333;">CMS Support Team</strong></p>
     </div>
-    <div class="footer">Â© 2026 CMS Â· Enterprise Client Management System</div>
+    <div class="footer">© 2026 CMS · Client Management System</div>
 </div>
 </body>
 </html>

@@ -1,11 +1,11 @@
-﻿{
+{
   "__inputs": [],
   "__requires": [
     { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "10.0.0" },
     { "type": "datasource", "id": "prometheus", "name": "Prometheus", "version": "1.0.0" }
   ],
   "annotations": { "list": [] },
-  "description": "CMS â€” Enterprise Client Management System observability dashboard. Phase 7.",
+  "description": "CMS — Client Management System observability dashboard. Phase 7.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -16,7 +16,7 @@
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
       "id": 100,
-      "title": "ðŸ“Š Request Rate",
+      "title": "📊 Request Rate",
       "type": "row"
     },
     {
@@ -79,7 +79,7 @@
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
       "id": 101,
-      "title": "â± Latency (p50 / p95 / p99)",
+      "title": "⏱ Latency (p50 / p95 / p99)",
       "type": "row"
     },
     {
@@ -98,19 +98,19 @@
         {
           "datasource": { "type": "prometheus", "uid": "cms-prometheus" },
           "expr": "histogram_quantile(0.50, sum by (application, le) (rate(http_server_requests_seconds_bucket[5m])))",
-          "legendFormat": "p50 â€” {{ application }}",
+          "legendFormat": "p50 — {{ application }}",
           "refId": "A"
         },
         {
           "datasource": { "type": "prometheus", "uid": "cms-prometheus" },
           "expr": "histogram_quantile(0.95, sum by (application, le) (rate(http_server_requests_seconds_bucket[5m])))",
-          "legendFormat": "p95 â€” {{ application }}",
+          "legendFormat": "p95 — {{ application }}",
           "refId": "B"
         },
         {
           "datasource": { "type": "prometheus", "uid": "cms-prometheus" },
           "expr": "histogram_quantile(0.99, sum by (application, le) (rate(http_server_requests_seconds_bucket[5m])))",
-          "legendFormat": "p99 â€” {{ application }}",
+          "legendFormat": "p99 — {{ application }}",
           "refId": "C"
         }
       ],
@@ -121,7 +121,7 @@
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 },
       "id": 102,
-      "title": "ðŸ§  JVM Memory",
+      "title": "🧠 JVM Memory",
       "type": "row"
     },
     {
@@ -140,13 +140,13 @@
         {
           "datasource": { "type": "prometheus", "uid": "cms-prometheus" },
           "expr": "jvm_memory_used_bytes{area=\"heap\"}",
-          "legendFormat": "{{ application }} â€” heap used",
+          "legendFormat": "{{ application }} — heap used",
           "refId": "A"
         },
         {
           "datasource": { "type": "prometheus", "uid": "cms-prometheus" },
           "expr": "jvm_memory_max_bytes{area=\"heap\"}",
-          "legendFormat": "{{ application }} â€” heap max",
+          "legendFormat": "{{ application }} — heap max",
           "refId": "B"
         }
       ],
@@ -169,7 +169,7 @@
         {
           "datasource": { "type": "prometheus", "uid": "cms-prometheus" },
           "expr": "jvm_threads_live_threads",
-          "legendFormat": "{{ application }} â€” live threads",
+          "legendFormat": "{{ application }} — live threads",
           "refId": "A"
         }
       ],
@@ -180,7 +180,7 @@
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 27 },
       "id": 103,
-      "title": "ðŸ“¨ Kafka",
+      "title": "📨 Kafka",
       "type": "row"
     },
     {
@@ -207,7 +207,7 @@
         {
           "datasource": { "type": "prometheus", "uid": "cms-prometheus" },
           "expr": "kafka_consumer_fetch_manager_records_lag_max",
-          "legendFormat": "{{ client_id }} â€” {{ topic }}",
+          "legendFormat": "{{ client_id }} — {{ topic }}",
           "refId": "A"
         }
       ],
@@ -230,7 +230,7 @@
         {
           "datasource": { "type": "prometheus", "uid": "cms-prometheus" },
           "expr": "sum by (application) (rate(kafka_producer_record_send_rate[1m]))",
-          "legendFormat": "{{ application }} â€” sent/s",
+          "legendFormat": "{{ application }} — sent/s",
           "refId": "A"
         }
       ],
@@ -241,7 +241,7 @@
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 36 },
       "id": 104,
-      "title": "ðŸ”´ Service Health (UP/DOWN)",
+      "title": "🔴 Service Health (UP/DOWN)",
       "type": "row"
     },
     {
@@ -283,7 +283,7 @@
   "time": { "from": "now-30m", "to": "now" },
   "timepicker": {},
   "timezone": "browser",
-  "title": "CMS â€” Service Overview",
+  "title": "CMS — Service Overview",
   "uid": "cms-overview-v1",
   "version": 1
 }

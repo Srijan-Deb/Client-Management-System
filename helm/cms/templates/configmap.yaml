@@ -1,0 +1,37 @@
+{{- /*
+  configmap.yaml
+  Holds non-sensitive, environment-level configuration shared by all CMS services.
+  Sensitive values (passwords, API keys) remain in secret.yaml.
+
+  The deployment.yaml checksums this file so that any change to shared config
+  automatically triggers a rolling restart of all pods.
+*/ -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cms-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: cms-config
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+data:
+  # ── MySQL ──────────────────────────────────────────────────────────────────
+  MYSQL_HOST:     {{ .Values.config.mysql.host     | default "cms-mysql"    | quote }}
+  MYSQL_PORT:     {{ .Values.config.mysql.port     | default "3306"         | quote }}
+
+  # ── Kafka ──────────────────────────────────────────────────────────────────
+  KAFKA_BOOTSTRAP_SERVERS: {{ .Values.config.kafka.bootstrapServers | default "cms-kafka:9092" | quote }}
+
+  # ── Redis ──────────────────────────────────────────────────────────────────
+  REDIS_HOST: {{ .Values.config.redis.host | default "cms-redis" | quote }}
+  REDIS_PORT: {{ .Values.config.redis.port | default "6379"      | quote }}
+
+  # ── Keycloak ───────────────────────────────────────────────────────────────
+  KEYCLOAK_ISSUER_URI: {{ .Values.config.keycloak.issuerUri | default "http://cms-keycloak:8080/realms/cms" | quote }}
+
+  # ── MinIO ──────────────────────────────────────────────────────────────────
+  MINIO_ENDPOINT: {{ .Values.config.minio.endpoint | default "http://cms-minio:9000" | quote }}
+
+  # ── Observability ──────────────────────────────────────────────────────────
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.config.otel.endpoint | default "http://cms-jaeger:4317" | quote }}

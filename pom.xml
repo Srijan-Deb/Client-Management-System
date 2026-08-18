@@ -11,7 +11,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>cms-parent</name>
-    <description>Enterprise Client Management System - Multi-Module Parent</description>
+    <description>Client Management System - Multi-Module Parent</description>
 
     <!-- ===================== Child modules ====================== -->
     <modules>

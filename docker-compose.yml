@@ -1,6 +1,6 @@
 
 # ==============================================================
-# CMS â€” Enterprise Client Management System
+# CMS â€” Client Management System
 # Dev stack: MySQL 8, Redis 7, Zookeeper + Kafka (single broker),
 #            Keycloak 24, MinIO, Mailhog
 #            + Observability: Prometheus, Grafana, Jaeger, AlertManager (Phase 7)

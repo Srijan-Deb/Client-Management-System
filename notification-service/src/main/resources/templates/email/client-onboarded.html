@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8"/>
@@ -21,15 +21,15 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>Welcome to CMS ðŸ‘‹</h1>
-        <p>Enterprise Client Management System</p>
+        <h1>Welcome to CMS 👋</h1>
+        <p>Client Management System</p>
     </div>
     <div class="body">
         <h2>Hi <span th:text="${firstName}">Client</span>,</h2>
         <p>Your account has been successfully created. Here are your details:</p>
         <p>
-            <span class="badge">Client ID: <span th:text="${clientId}">â€”</span></span>&nbsp;
-            <span class="badge">Account ID: <span th:text="${accountId}">â€”</span></span>
+            <span class="badge">Client ID: <span th:text="${clientId}">—</span></span>&nbsp;
+            <span class="badge">Account ID: <span th:text="${accountId}">—</span></span>
         </p>
         <hr class="divider"/>
         <p>You can now log in and start managing your services. If you have any questions, our support team is here to help.</p>
@@ -38,7 +38,7 @@
         </p>
     </div>
     <div class="footer">
-        Â© 2026 CMS Â· Enterprise Client Management System<br/>
+        © 2026 CMS · Client Management System<br/>
         You received this because an account was created for <span th:text="${email}">you</span>.
     </div>
 </div>

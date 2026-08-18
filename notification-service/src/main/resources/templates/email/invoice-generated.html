@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8"/>
-    <title>Invoice Ready â€” CMS</title>
+    <title>Invoice Ready — CMS</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
@@ -19,14 +19,14 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>ðŸ“„ Your Invoice is Ready</h1>
+        <h1>📄 Your Invoice is Ready</h1>
     </div>
     <div class="body">
         <p>Hi there,</p>
         <p>A new invoice has been generated for your account. Please review the details below:</p>
         <div class="invoice-box">
             <div class="invoice-row"><span>Invoice #</span><span th:text="${invoiceNumber}">INV-0001</span></div>
-            <div class="invoice-row"><span>Contract</span><span th:text="${contractId}">â€”</span></div>
+            <div class="invoice-row"><span>Contract</span><span th:text="${contractId}">—</span></div>
             <div class="invoice-row"><span>Subtotal</span><span>$<span th:text="${subtotal}">0.00</span></span></div>
             <div class="invoice-row"><span>Tax</span><span>$<span th:text="${tax}">0.00</span></span></div>
             <div class="invoice-row total"><span>Total Due</span><span>$<span th:text="${total}">0.00</span></span></div>
@@ -35,7 +35,7 @@
         <p>Please arrange payment by the due date. If you have any questions, contact your account manager.</p>
         <p style="font-size:14px; color:#888; margin-top:28px;">Regards,<br/><strong style="color:#333;">CMS Billing Team</strong></p>
     </div>
-    <div class="footer">Â© 2026 CMS Â· Enterprise Client Management System</div>
+    <div class="footer">© 2026 CMS · Client Management System</div>
 </div>
 </body>
 </html>

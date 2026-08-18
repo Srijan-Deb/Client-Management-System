@@ -1,11 +1,11 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # =============================================================================
 # keycloak-provision.sh
 # Provisions the 'cms' realm in Keycloak via Admin REST API.
 # Run from the project root AFTER Keycloak is healthy:
 #   bash docker/keycloak-provision.sh
 #
-# Idempotent: safe to re-run â€” existing resources are skipped (409 = ok).
+# Idempotent: safe to re-run — existing resources are skipped (409 = ok).
 # =============================================================================
 set -euo pipefail
 
@@ -21,7 +21,7 @@ RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
 info()    { echo -e "${GREEN}[INFO]${NC}  $*"; }
 warn()    { echo -e "${YELLOW}[WARN]${NC}  $*"; }
 skip()    { echo -e "${YELLOW}[SKIP]${NC}  $*"; }
-section() { echo -e "\n${GREEN}â•â• $* â•â•${NC}"; }
+section() { echo -e "\n${GREEN}══ $* ══${NC}"; }
 
 # Treat 409 (Conflict / already exists) as success
 http_post() {
@@ -40,7 +40,7 @@ http_post() {
   fi
 }
 
-# â”€â”€â”€ Step 1: Authenticate to master realm â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─── Step 1: Authenticate to master realm ────────────────────────────────────
 section "Step 1: Authenticate to master realm"
 RESPONSE=$(curl -s -X POST "$KC_URL/realms/master/protocol/openid-connect/token" \
   -d "grant_type=password" \
@@ -55,10 +55,10 @@ if [[ -z "$TOKEN" ]]; then
 fi
 info "Admin token acquired."
 
-# â”€â”€â”€ Step 2: Create realm â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─── Step 2: Create realm ────────────────────────────────────────────────────
 section "Step 2: Create realm '$REALM'"
 result=$(http_post "$KC_URL/admin/realms" \
-  -d "{\"realm\":\"$REALM\",\"enabled\":true,\"displayName\":\"Enterprise CMS\",
+  -d "{\"realm\":\"$REALM\",\"enabled\":true,\"displayName\":\"CMS\",
        \"registrationAllowed\":false,\"loginWithEmailAllowed\":true,
        \"accessTokenLifespan\":3600,\"refreshTokenMaxReuse\":0}")
 [[ "$result" == "exists" ]] && skip "Realm '$REALM' already exists" || info "Realm '$REALM' created."
@@ -68,12 +68,12 @@ RESPONSE=$(curl -s -X POST "$KC_URL/realms/master/protocol/openid-connect/token"
   -d "grant_type=password&client_id=admin-cli&username=$ADMIN_USER&password=$ADMIN_PASS")
 TOKEN=$(echo "$RESPONSE" | grep -o '"access_token":"[^"]*' | cut -d'"' -f4)
 
-# â”€â”€â”€ Step 3: Create roles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─── Step 3: Create roles ────────────────────────────────────────────────────
 section "Step 3: Create realm roles"
 for ROLE in admin account_manager support_agent client; do
   DESCRIPTION=""
   case "$ROLE" in
-    admin)           DESCRIPTION="Full system access â€” user management, config, all data" ;;
+    admin)           DESCRIPTION="Full system access — user management, config, all data" ;;
     account_manager) DESCRIPTION="Manages client accounts, contracts, invoices" ;;
     support_agent)   DESCRIPTION="Handles support tickets, views client data" ;;
     client)          DESCRIPTION="End-user client portal access" ;;
@@ -83,7 +83,7 @@ for ROLE in admin account_manager support_agent client; do
   [[ "$result" == "exists" ]] && skip "Role '$ROLE' already exists" || info "Role '$ROLE' created."
 done
 
-# â”€â”€â”€ Step 4: Create confidential client â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─── Step 4: Create confidential client ─────────────────────────────────────
 section "Step 4: Create client '$CLIENT_ID'"
 result=$(http_post "$KC_URL/admin/realms/$REALM/clients" \
   -d "{
@@ -101,7 +101,7 @@ result=$(http_post "$KC_URL/admin/realms/$REALM/clients" \
   }")
 [[ "$result" == "exists" ]] && skip "Client '$CLIENT_ID' already exists" || info "Client '$CLIENT_ID' created (secret: cms-backend-secret-dev)."
 
-# â”€â”€â”€ Step 5: Create test user â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─── Step 5: Create test user ────────────────────────────────────────────────
 section "Step 5: Create test user '$TEST_USER_EMAIL'"
 result=$(http_post "$KC_URL/admin/realms/$REALM/users" \
   -d "{
@@ -135,7 +135,7 @@ result=$(http_post "$KC_URL/admin/realms/$REALM/users" \
 ACCTMGR_ID=$(curl -s "$KC_URL/admin/realms/$REALM/users?username=acctmgr" \
   -H "Authorization: Bearer $TOKEN" | grep -o '"id":"[^"]*' | head -1 | cut -d'"' -f4)
 
-# â”€â”€â”€ Step 6: Assign roles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─── Step 6: Assign roles ────────────────────────────────────────────────────
 section "Step 6: Assign roles to test users"
 
 # Get role representations
@@ -162,7 +162,7 @@ curl -s -X POST "$KC_URL/admin/realms/$REALM/users/$ACCTMGR_ID/role-mappings/rea
   -d "[$ROLE_ACCT_MGR]" > /dev/null
 info "Assigned [account_manager] to acctmgr@cms.com"
 
-# â”€â”€â”€ Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─── Summary ─────────────────────────────────────────────────────────────────
 section "Provisioning Complete"
 echo ""
 echo "  Realm:         $KC_URL/realms/$REALM"
@@ -172,8 +172,8 @@ echo "  Clients:"
 echo "    cms-backend  (secret: cms-backend-secret-dev, direct access grants)"
 echo ""
 echo "  Test users:"
-echo "    testuser@cms.com / $TEST_USER_PASS   â†’ roles: admin, support_agent"
-echo "    acctmgr@cms.com  / $TEST_USER_PASS   â†’ roles: account_manager"
+echo "    testuser@cms.com / $TEST_USER_PASS   → roles: admin, support_agent"
+echo "    acctmgr@cms.com  / $TEST_USER_PASS   → roles: account_manager"
 echo ""
 echo "  Token endpoint:"
 echo "    POST $KC_URL/realms/cms/protocol/openid-connect/token"

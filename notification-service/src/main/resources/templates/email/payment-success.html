@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8"/>
-    <title>Payment Received â€” CMS</title>
+    <title>Payment Received — CMS</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
@@ -19,22 +19,22 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>âœ… Payment Received</h1>
+        <h1>✅ Payment Received</h1>
     </div>
     <div class="body">
-        <div class="success-icon">ðŸ’³</div>
+        <div class="success-icon">💳</div>
         <p>Hi there, your payment has been successfully processed. Here's your receipt:</p>
         <div class="receipt-box">
-            <div class="receipt-row"><span>Payment ID</span><span th:text="${paymentId}">â€”</span></div>
-            <div class="receipt-row"><span>Invoice #</span><span th:text="${invoiceNumber}">â€”</span></div>
-            <div class="receipt-row"><span>Payment Method</span><span th:text="${paymentMethod}">â€”</span></div>
-            <div class="receipt-row"><span>Date</span><span th:text="${paymentDate}">â€”</span></div>
+            <div class="receipt-row"><span>Payment ID</span><span th:text="${paymentId}">—</span></div>
+            <div class="receipt-row"><span>Invoice #</span><span th:text="${invoiceNumber}">—</span></div>
+            <div class="receipt-row"><span>Payment Method</span><span th:text="${paymentMethod}">—</span></div>
+            <div class="receipt-row"><span>Date</span><span th:text="${paymentDate}">—</span></div>
             <div class="receipt-row amount"><span>Amount Paid</span><span>$<span th:text="${amount}">0.00</span></span></div>
         </div>
         <p>Your invoice is now marked as <strong>PAID</strong>. Thank you for your payment.</p>
         <p style="font-size:14px; color:#888; margin-top:28px;">Regards,<br/><strong style="color:#333;">CMS Billing Team</strong></p>
     </div>
-    <div class="footer">Â© 2026 CMS Â· Enterprise Client Management System</div>
+    <div class="footer">© 2026 CMS · Client Management System</div>
 </div>
 </body>
 </html>
