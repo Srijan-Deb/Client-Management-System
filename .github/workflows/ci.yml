@@ -132,8 +132,9 @@ jobs:
         run: |
           mvn --batch-mode --no-transfer-progress \
               sonar:sonar \
-              -Dsonar.projectKey=cms-enterprise \
-              -Dsonar.projectName="CMS Enterprise" \
+              -Dsonar.organization="srijan-dhabal-deb" \
+              -Dsonar.projectKey="srijan-deb" \
+              -Dsonar.projectName="Client Management System" \
               -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
               -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
               -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml \
