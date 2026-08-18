@@ -1,0 +1,15 @@
+-- =============================================================
+-- Billing Service - V1 Initial Migration (Phase 0 placeholder)
+-- =============================================================
+-- This script intentionally contains no DDL.
+-- Flyway requires at least one migration file to be present;
+-- this placeholder satisfies that requirement and establishes
+-- the migration baseline at version 1.
+--
+-- Real schema will be created in:
+--   V2__create_products_categories.sql  (Phase 5)
+--   V3__create_subscriptions.sql        (Phase 5)
+--   V4__create_contracts.sql            (Phase 5)
+--   V5__create_invoices.sql             (Phase 5)
+--   V6__create_payments.sql             (Phase 5)
+-- =============================================================

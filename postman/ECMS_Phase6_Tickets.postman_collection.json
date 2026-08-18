@@ -1,0 +1,129 @@
+﻿{
+  "info": {
+    "name": "CMS â€” Support Tickets (Phase 6)",
+    "description": "Lifecycle of a support ticket (Create, Assign, Comment, Resolve, Reopen, Close)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8090", "type": "string" },
+    { "key": "token", "value": "<YOUR_JWT_HERE>", "type": "string" },
+    { "key": "ticket_id", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. POST /tickets â€” Create Ticket",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+              "pm.test('Has ticketId', () => {",
+              "  const body = pm.response.json();",
+              "  pm.collectionVariables.set('ticket_id', body.ticketId);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"clientId\": 1,\n  \"subject\": \"Login issue\",\n  \"description\": \"Cannot login to the portal\",\n  \"priority\": \"HIGH\",\n  \"category\": \"AUTH\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/clients/api/v1/tickets",
+          "host": ["{{base_url}}"],
+          "path": ["clients","api","v1","tickets"]
+        }
+      }
+    },
+    {
+      "name": "2. GET /tickets/{id} â€” Get single ticket",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": {
+          "raw": "{{base_url}}/clients/api/v1/tickets/{{ticket_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["clients","api","v1","tickets","{{ticket_id}}"]
+        }
+      }
+    },
+    {
+      "name": "3. GET /tickets?clientId={id} â€” Get tickets for client",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": {
+          "raw": "{{base_url}}/clients/api/v1/tickets?clientId=1",
+          "host": ["{{base_url}}"],
+          "path": ["clients","api","v1","tickets"],
+          "query": [{ "key": "clientId", "value": "1" }]
+        }
+      }
+    },
+    {
+      "name": "4. PUT /tickets/{id}/assign?agentId=1 â€” Assign ticket",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": {
+          "raw": "{{base_url}}/clients/api/v1/tickets/{{ticket_id}}/assign?agentId=1",
+          "host": ["{{base_url}}"],
+          "path": ["clients","api","v1","tickets","{{ticket_id}}","assign"],
+          "query": [{ "key": "agentId", "value": "1" }]
+        }
+      }
+    },
+    {
+      "name": "5. POST /tickets/{id}/comments â€” Add comment",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"content\": \"We are looking into this.\",\n  \"internalOnly\": false\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/clients/api/v1/tickets/{{ticket_id}}/comments",
+          "host": ["{{base_url}}"],
+          "path": ["clients","api","v1","tickets","{{ticket_id}}","comments"]
+        }
+      }
+    },
+    {
+      "name": "6. PUT /tickets/{id}/resolve â€” Resolve ticket",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": {
+          "raw": "{{base_url}}/clients/api/v1/tickets/{{ticket_id}}/resolve",
+          "host": ["{{base_url}}"],
+          "path": ["clients","api","v1","tickets","{{ticket_id}}","resolve"]
+        }
+      }
+    },
+    {
+      "name": "7. PUT /tickets/{id}/close â€” Close ticket",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": {
+          "raw": "{{base_url}}/clients/api/v1/tickets/{{ticket_id}}/close",
+          "host": ["{{base_url}}"],
+          "path": ["clients","api","v1","tickets","{{ticket_id}}","close"]
+        }
+      }
+    }
+  ]
+}

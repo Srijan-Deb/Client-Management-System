@@ -1,0 +1,146 @@
+# ==============================================================================
+# values.yaml - Default values for CMS Helm chart
+# ==============================================================================
+# Override any value with:
+#   helm install cms ./helm/cms --set global.imageTag=1.2.3
+#   helm install cms ./helm/cms -f my-overrides.yaml
+# ==============================================================================
+
+# Global settings shared by all services
+global:
+  # Replace Srijan-Deb with your actual GitHub username/org
+  imageRegistry: ghcr.io/Srijan-Deb
+  imageTag: latest
+  imagePullPolicy: Always
+  # imagePullSecrets:
+  #   - name: ghcr-credentials
+
+# ── Service definitions ──────────────────────────────────────────────────────
+# Each service can override any of the defaults below independently
+services:
+  api-gateway:
+    enabled: true
+    replicaCount: 1
+    image:
+      name: cms-api-gateway
+    containerPort: 8090
+    service:
+      port: 8090
+      type: ClusterIP
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "384Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+    env:
+      SPRING_PROFILES_ACTIVE: prod
+    ingress:
+      enabled: true
+      host: cms.example.com
+      path: /
+      pathType: Prefix
+      annotations:
+        kubernetes.io/ingress.class: traefik
+
+  client-service:
+    enabled: true
+    replicaCount: 2
+    image:
+      name: cms-client-service
+    containerPort: 8081
+    service:
+      port: 8081
+      type: ClusterIP
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "750m"
+        memory: "768Mi"
+    env:
+      SPRING_PROFILES_ACTIVE: prod
+    ingress:
+      enabled: false
+
+  account-service:
+    enabled: true
+    replicaCount: 2
+    image:
+      name: cms-account-service
+    containerPort: 8082
+    service:
+      port: 8082
+      type: ClusterIP
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "750m"
+        memory: "768Mi"
+    env:
+      SPRING_PROFILES_ACTIVE: prod
+    ingress:
+      enabled: false
+
+  billing-service:
+    enabled: true
+    replicaCount: 2
+    image:
+      name: cms-billing-service
+    containerPort: 8083
+    service:
+      port: 8083
+      type: ClusterIP
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "750m"
+        memory: "768Mi"
+    env:
+      SPRING_PROFILES_ACTIVE: prod
+    ingress:
+      enabled: false
+
+  notification-service:
+    enabled: true
+    replicaCount: 1
+    image:
+      name: cms-notification-service
+    containerPort: 8084
+    service:
+      port: 8084
+      type: ClusterIP
+    resources:
+      requests:
+        cpu: "125m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+    env:
+      SPRING_PROFILES_ACTIVE: prod
+    ingress:
+      enabled: false
+
+# ── HPA (Horizontal Pod Autoscaler) ─────────────────────────────────────────
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+
+# ── Secrets (injected via Kubernetes Secret or external-secrets operator) ────
+# Do NOT put real values here. Override via --set or a sealed-secrets file.
+secrets:
+  mysqlUsername: ecms_user
+  mysqlPassword: ""         # Required - set via --set secrets.mysqlPassword=...
+  minioAccessKey: ecms_minio
+  minioSecretKey: ""
+  stripeApiKey: ""
+  keycloakAdminPassword: ""

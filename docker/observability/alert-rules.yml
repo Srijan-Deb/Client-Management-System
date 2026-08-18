@@ -1,0 +1,101 @@
+# ==============================================================================
+# alert-rules.yml â€” CMS Prometheus alert rules (Phase 7)
+# Implements OPSFLOW "Alert Threshold Breached?" decision node.
+# ==============================================================================
+
+groups:
+  - name: cms-alerts
+    interval: 30s
+    rules:
+
+      # â”€â”€ 1. High Error Rate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      # Fires if any service has >5% HTTP 5xx responses over the last 2 minutes.
+      # Matches OPSFLOW "Error rate > threshold" branch.
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum by (service) (
+              rate(http_server_requests_seconds_count{outcome="SERVER_ERROR"}[2m])
+            )
+            /
+            sum by (service) (
+              rate(http_server_requests_seconds_count[2m])
+            )
+          ) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          team: cms-ops
+        annotations:
+          summary: "High error rate on {{ $labels.service }}"
+          description: >
+            Service {{ $labels.service }} has a 5xx error rate of
+            {{ $value | humanizePercentage }} â€” exceeds 5% threshold.
+          runbook: "Check /actuator/health and recent logs for root cause."
+
+      # â”€â”€ 2. High P95 Latency â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      # Fires if p95 response time exceeds 2 seconds for 5 consecutive minutes.
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum by (service, le) (
+              rate(http_server_requests_seconds_bucket[5m])
+            )
+          ) > 2.0
+        for: 5m
+        labels:
+          severity: warning
+          team: cms-ops
+        annotations:
+          summary: "High p95 latency on {{ $labels.service }}"
+          description: >
+            p95 response time on {{ $labels.service }} is
+            {{ printf "%.2f" $value }}s â€” exceeds 2s SLA threshold.
+
+      # â”€â”€ 3. Service Down â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      # Fires if Prometheus cannot scrape a target for more than 1 minute.
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: cms-ops
+        annotations:
+          summary: "CMS service unreachable: {{ $labels.job }}"
+          description: >
+            Prometheus cannot scrape {{ $labels.job }} at {{ $labels.instance }}.
+            The service may be down or the network route is broken.
+
+      # â”€â”€ 4. High Kafka Consumer Lag â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      # Fires if any consumer group is more than 500 messages behind.
+      - alert: KafkaConsumerLag
+        expr: |
+          kafka_consumer_fetch_manager_records_lag_max > 500
+        for: 3m
+        labels:
+          severity: warning
+          team: cms-ops
+        annotations:
+          summary: "Kafka consumer lag elevated: {{ $labels.client_id }}"
+          description: >
+            Consumer {{ $labels.client_id }} has a lag of {{ $value }} records
+            on topic {{ $labels.topic }}. Notification Service may be slow.
+
+      # â”€â”€ 5. High JVM Heap Usage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      # Fires if any service heap exceeds 85% of max.
+      - alert: HighJvmHeapUsage
+        expr: |
+          (
+            jvm_memory_used_bytes{area="heap"}
+            /
+            jvm_memory_max_bytes{area="heap"}
+          ) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          team: cms-ops
+        annotations:
+          summary: "High JVM heap on {{ $labels.application }}"
+          description: >
+            {{ $labels.application }} heap usage is
+            {{ $value | humanizePercentage }} â€” consider tuning -Xmx or investigating leaks.

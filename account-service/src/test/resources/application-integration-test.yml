@@ -1,0 +1,20 @@
+# Integration-test profile for account-service.
+# JWT validation is bypassed: WireMock stub returns an empty JWKS key set
+# so any token passes the signature check (simulates a logged-in user without Keycloak).
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Points to WireMock - returns empty key set so any JWT passes
+          jwk-set-uri: http://localhost:18099/jwks
+
+  # Use simple in-memory cache (no Redis container in tests)
+  cache:
+    type: simple
+
+management:
+  health:
+    redis:
+      enabled: false

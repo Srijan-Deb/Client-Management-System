@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.cms</groupId>
+        <artifactId>cms-parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>api-gateway</artifactId>
+    <name>api-gateway</name>
+    <description>CMS API Gateway â€” Spring Cloud Gateway on port 8090; routes to all backend services</description>
+
+    <dependencies>
+        <!-- â”€â”€ Gateway (reactive / WebFlux â€” do NOT add spring-boot-starter-web) â”€â”€ -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-gateway</artifactId>
+        </dependency>
+
+        <!-- â”€â”€ JWT validation at the gateway layer â”€â”€ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+
+        <!-- â”€â”€ Shared security utilities (CmsJwtAuthenticationConverter) â”€â”€ -->
+        <dependency>
+            <groupId>com.cms</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
+
+        <!-- â”€â”€ Observability â”€â”€ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!-- Prometheus scrape endpoint (/actuator/prometheus) -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <!-- Micrometer Tracing â†’ OTel bridge (distributed tracing) -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-otel</artifactId>
+        </dependency>
+        <!-- OTLP gRPC exporter â€” ships spans to Jaeger -->
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-otlp</artifactId>
+        </dependency>
+
+        <!-- â”€â”€ Redis Reactive â€” required by Spring Cloud Gateway RequestRateLimiter â”€â”€ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis-reactive</artifactId>
+        </dependency>
+    </dependencies>
+
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <image>
+                        <!-- Replace Srijan-Deb with your GitHub username/org -->
+                        <name>ghcr.io/Srijan-Deb/cms-${project.artifactId}:${project.version}</name>
+                        <tags>
+                            <tag>ghcr.io/Srijan-Deb/cms-${project.artifactId}:latest</tag>
+                        </tags>
+                        <!-- Paketo Buildpacks - produces minimal layered OCI image -->
+                        <builder>paketobuildpacks/builder-jammy-base:latest</builder>
+                        <env>
+                            <BP_JVM_VERSION>21</BP_JVM_VERSION>
+                        </env>
+                    </image>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Payment Failed â€” Action Required</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .header { background: linear-gradient(135deg, #e53935, #b71c1c); padding: 36px 32px; text-align: center; }
+        .header h1 { color: #fff; margin: 0; font-size: 24px; font-weight: 600; }
+        .body { padding: 36px 32px; color: #333; }
+        .alert-box { background: #fce8e6; border: 1px solid #f5c6c3; border-radius: 6px; padding: 16px 20px; margin: 16px 0; }
+        .alert-box p { margin: 0; font-size: 14px; color: #c62828; }
+        .info-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 14px; color: #444; border-bottom: 1px solid #f0f0f0; }
+        .info-row:last-child { border-bottom: none; }
+        .btn { display: inline-block; background: #e53935; color: #fff; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-weight: 600; margin-top: 20px; font-size: 15px; }
+        .footer { background: #f9fafb; padding: 18px 32px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>âš ï¸ Payment Failed</h1>
+    </div>
+    <div class="body">
+        <p>Hi there,</p>
+        <p>Unfortunately we were unable to process your payment. Please review the details below and retry.</p>
+        <div class="alert-box">
+            <p><strong>Reason:</strong> <span th:text="${failureReason}">Payment declined</span></p>
+        </div>
+        <div style="margin: 20px 0;">
+            <div class="info-row"><span>Invoice #</span><span th:text="${invoiceNumber}">â€”</span></div>
+            <div class="info-row"><span>Amount Due</span><span>$<span th:text="${amount}">0.00</span></span></div>
+            <div class="info-row"><span>Attempt Date</span><span th:text="${attemptDate}">â€”</span></div>
+        </div>
+        <p>To retry your payment, please log in to your CMS portal or contact your account manager.</p>
+        <p style="font-size:14px; color:#888; margin-top:28px;">Regards,<br/><strong style="color:#333;">CMS Billing Team</strong></p>
+    </div>
+    <div class="footer">Â© 2026 CMS Â· Enterprise Client Management System</div>
+</div>
+</body>
+</html>

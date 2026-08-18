@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Support Ticket Received â€” CMS</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .header { background: linear-gradient(135deg, #7b1fa2, #4a148c); padding: 36px 32px; text-align: center; }
+        .header h1 { color: #fff; margin: 0; font-size: 24px; font-weight: 600; }
+        .body { padding: 36px 32px; color: #333; }
+        .ticket-box { background: #f3e5f5; border: 1px solid #ce93d8; border-radius: 6px; padding: 18px 22px; margin: 16px 0; }
+        .ticket-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 14px; color: #444; border-bottom: 1px solid #e1bee7; }
+        .ticket-row:last-child { border-bottom: none; }
+        .ticket-desc { background: #fafafa; border: 1px solid #eee; border-radius: 4px; padding: 12px 16px; margin-top: 16px; font-size: 14px; color: #555; line-height: 1.6; white-space: pre-wrap; }
+        .badge-priority { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .footer { background: #f9fafb; padding: 18px 32px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>ðŸŽ« Support Ticket Created</h1>
+    </div>
+    <div class="body">
+        <p>Hi there,</p>
+        <p>Your support ticket has been received and our team is on it. Here are the details:</p>
+        <div class="ticket-box">
+            <div class="ticket-row"><span>Ticket #</span><span th:text="${ticketId}">TICK-001</span></div>
+            <div class="ticket-row"><span>Subject</span><span th:text="${subject}">â€”</span></div>
+            <div class="ticket-row"><span>Priority</span><span th:text="${priority}">MEDIUM</span></div>
+            <div class="ticket-row"><span>Category</span><span th:text="${category}">â€”</span></div>
+            <div class="ticket-row"><span>Status</span><span>OPEN</span></div>
+            <div class="ticket-row"><span>Created</span><span th:text="${createdAt}">â€”</span></div>
+        </div>
+        <p><strong>Your description:</strong></p>
+        <div class="ticket-desc" th:text="${description}">â€”</div>
+        <p style="margin-top:20px;">We'll update you as soon as your ticket is assigned to an agent. Typical response time is within 24 hours.</p>
+        <p style="font-size:14px; color:#888; margin-top:28px;">Regards,<br/><strong style="color:#333;">CMS Support Team</strong></p>
+    </div>
+    <div class="footer">Â© 2026 CMS Â· Enterprise Client Management System</div>
+</div>
+</body>
+</html>

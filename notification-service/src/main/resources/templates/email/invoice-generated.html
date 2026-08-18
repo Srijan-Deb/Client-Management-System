@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Invoice Ready â€” CMS</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .header { background: linear-gradient(135deg, #00897b, #004d40); padding: 36px 32px; text-align: center; }
+        .header h1 { color: #fff; margin: 0; font-size: 24px; font-weight: 600; }
+        .body { padding: 36px 32px; color: #333; }
+        .invoice-box { background: #f9fafb; border: 1px solid #e0e0e0; border-radius: 6px; padding: 20px 24px; margin: 20px 0; }
+        .invoice-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+        .invoice-row.total { border-top: 2px solid #00897b; margin-top: 8px; padding-top: 12px; font-weight: 700; font-size: 16px; color: #00897b; }
+        .btn { display: inline-block; background: #00897b; color: #fff; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-weight: 600; margin-top: 20px; font-size: 15px; }
+        .footer { background: #f9fafb; padding: 18px 32px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>ðŸ“„ Your Invoice is Ready</h1>
+    </div>
+    <div class="body">
+        <p>Hi there,</p>
+        <p>A new invoice has been generated for your account. Please review the details below:</p>
+        <div class="invoice-box">
+            <div class="invoice-row"><span>Invoice #</span><span th:text="${invoiceNumber}">INV-0001</span></div>
+            <div class="invoice-row"><span>Contract</span><span th:text="${contractId}">â€”</span></div>
+            <div class="invoice-row"><span>Subtotal</span><span>$<span th:text="${subtotal}">0.00</span></span></div>
+            <div class="invoice-row"><span>Tax</span><span>$<span th:text="${tax}">0.00</span></span></div>
+            <div class="invoice-row total"><span>Total Due</span><span>$<span th:text="${total}">0.00</span></span></div>
+        </div>
+        <p th:if="${pdfUrl}"><a th:href="${pdfUrl}">Download Invoice PDF</a></p>
+        <p>Please arrange payment by the due date. If you have any questions, contact your account manager.</p>
+        <p style="font-size:14px; color:#888; margin-top:28px;">Regards,<br/><strong style="color:#333;">CMS Billing Team</strong></p>
+    </div>
+    <div class="footer">Â© 2026 CMS Â· Enterprise Client Management System</div>
+</div>
+</body>
+</html>

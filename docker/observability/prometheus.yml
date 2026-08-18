@@ -1,0 +1,85 @@
+# ==============================================================================
+# prometheus.yml â€” CMS Prometheus scrape configuration (Phase 7)
+# Polls all 5 service /actuator/prometheus endpoints every 15 seconds.
+# Services are reached via Docker internal hostnames when running in compose.
+# For local dev (services running on host), use host.docker.internal.
+# ==============================================================================
+
+global:
+  scrape_interval:     15s   # Default scrape cadence
+  evaluation_interval: 15s   # Alert rule evaluation cadence
+  scrape_timeout:      10s
+
+# Alert rules loaded from external file
+rule_files:
+  - /etc/prometheus/alert-rules.yml
+
+# AlertManager integration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - cms-alertmanager:9093
+
+# â”€â”€ Scrape targets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+scrape_configs:
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # API Gateway (port 8090)
+  - job_name: 'api-gateway'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:8090']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: service
+        replacement: api-gateway
+
+  # Client Service (port 8081)
+  - job_name: 'client-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:8081']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: service
+        replacement: client-service
+
+  # Account Service (port 8082)
+  - job_name: 'account-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:8082']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: service
+        replacement: account-service
+
+  # Billing Service (port 8083)
+  - job_name: 'billing-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:8083']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: service
+        replacement: billing-service
+
+  # Notification Service (port 8084)
+  - job_name: 'notification-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:8084']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: service
+        replacement: notification-service

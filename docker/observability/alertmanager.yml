@@ -1,0 +1,51 @@
+# ==============================================================================
+# alertmanager.yml â€” CMS AlertManager routing (Phase 7)
+# Routes alerts to Mailhog via a webhook so no external email config is needed.
+# For production: replace receiver with PagerDuty / Slack / email.
+# ==============================================================================
+
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ['alertname', 'service']
+  group_wait:      30s    # Wait before sending initial notification
+  group_interval:  5m     # How long to wait before re-sending grouped alerts
+  repeat_interval: 1h     # How often to re-notify for ongoing alerts
+  receiver: 'mailhog-webhook'
+
+  # Critical alerts get their own route with shorter repeat
+  routes:
+    - match:
+        severity: critical
+      receiver: 'mailhog-webhook'
+      repeat_interval: 15m
+
+receivers:
+  # Mailhog SMTP receiver â€” reuses the existing dev SMTP container
+  - name: 'mailhog-webhook'
+    email_configs:
+      - to: 'ops-alerts@cms.local'
+        from: 'alertmanager@cms.local'
+        smarthost: 'cms-mailhog:1025'
+        require_tls: false
+        send_resolved: true
+        headers:
+          Subject: '[{{ .Status | toUpper }}] CMS Alert: {{ .CommonLabels.alertname }}'
+        html: |
+          {{ range .Alerts }}
+          <h3>{{ .Labels.alertname }} â€” {{ .Labels.severity | toUpper }}</h3>
+          <p><strong>Summary:</strong> {{ .Annotations.summary }}</p>
+          <p><strong>Description:</strong> {{ .Annotations.description }}</p>
+          <p><strong>Starts at:</strong> {{ .StartsAt }}</p>
+          {{ if .Annotations.runbook }}<p><strong>Runbook:</strong> {{ .Annotations.runbook }}</p>{{ end }}
+          <hr/>
+          {{ end }}
+
+inhibit_rules:
+  # Suppress warnings when there is a critical alert for the same service
+  - source_match:
+      severity: critical
+    target_match:
+      severity: warning
+    equal: ['service']

@@ -1,0 +1,33 @@
+# Integration-test profile â€” overrides production security for Testcontainers tests.
+# All HTTP endpoints are opened (permitAll) so tests do not need a real JWT token.
+# The JWKS stub is still configured to satisfy Spring Security's resource server
+# auto-configuration startup check.
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Points to WireMock â€” satisfies startup OIDC check; requests are permitAll below
+          jwk-set-uri: http://localhost:18099/jwks
+
+  # Use simple in-memory cache (no Redis container in integration tests)
+  cache:
+    type: simple
+
+  # Kafka and datasource are set via @DynamicPropertySource in CreateClientIT
+
+# Disable Keycloak / Redis connectivity checks in Actuator health
+management:
+  health:
+    redis:
+      enabled: false
+
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Test Security Override
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Spring Security's SecurityFilterChain cannot be fully disabled via YAML alone.
+# The IntegrationTestSecurityConfig class (src/test/java/.../config/) registers
+# a high-precedence SecurityFilterChain bean that permits all requests, replacing
+# the production chain only when the "integration-test" profile is active.
+# See: com.cms.client.config.IntegrationTestSecurityConfig

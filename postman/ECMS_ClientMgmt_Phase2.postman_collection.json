@@ -1,0 +1,342 @@
+﻿{
+  "info": {
+    "name": "CMS â€” Client Management (Phase 2)",
+    "description": "Full ClientMgmt flow: create, duplicate-check, validation, get, search, update.\nPre-requisite: set {{base_url}} (e.g. http://localhost:8090) and {{token}} (Keycloak JWT).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8090",  "type": "string" },
+    { "key": "token",    "value": "<YOUR_JWT_HERE>",        "type": "string" },
+    { "key": "client_id","value": "",                       "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. POST /clients â€” Create (expect 201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+              "pm.test('Has clientId', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.clientId).to.be.a('number');",
+              "  pm.expect(body.accountId).to.be.a('number');",
+              "  pm.collectionVariables.set('client_id', body.clientId);",
+              "});",
+              "pm.test('Has Location header', () => {",
+              "  pm.expect(pm.response.headers.get('Location')).to.include('/clients/');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type",  "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"+91-9876543210\",\n  \"companyName\": \"Acme Corp\",\n  \"tier\": \"PREMIUM\"\n}"
+        },
+        "url": { "raw": "{{base_url}}/clients/api/v1/clients", "host": ["{{base_url}}"], "path": ["clients","api","v1","clients"] }
+      }
+    },
+    {
+      "name": "2. POST /clients â€” Duplicate email (expect 409)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 409', () => pm.response.to.have.status(409));",
+              "pm.test('Error code is DUPLICATE_EMAIL', () => {",
+              "  pm.expect(pm.response.json().errorCode).to.equal('DUPLICATE_EMAIL');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type",  "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Duplicate\",\n  \"email\": \"john.doe@example.com\",\n  \"tier\": \"STANDARD\"\n}"
+        },
+        "url": { "raw": "{{base_url}}/clients/api/v1/clients", "host": ["{{base_url}}"], "path": ["clients","api","v1","clients"] }
+      }
+    },
+    {
+      "name": "3. POST /clients â€” Validation failure: missing firstName (expect 400)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 400', () => pm.response.to.have.status(400));",
+              "pm.test('fieldErrors contains firstName', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.errorCode).to.equal('VALIDATION_ERROR');",
+              "  pm.expect(body.fieldErrors).to.have.property('firstName');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type",  "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"lastName\": \"Doe\",\n  \"email\": \"new.user@example.com\",\n  \"tier\": \"STANDARD\"\n}"
+        },
+        "url": { "raw": "{{base_url}}/clients/api/v1/clients", "host": ["{{base_url}}"], "path": ["clients","api","v1","clients"] }
+      }
+    },
+    {
+      "name": "4. GET /clients/{id} â€” By ID (expect 200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('clientId matches', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(String(body.clientId)).to.equal(pm.collectionVariables.get('client_id'));",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": {
+          "raw": "{{base_url}}/clients/api/v1/clients/{{client_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["clients","api","v1","clients","{{client_id}}"]
+        }
+      }
+    },
+    {
+      "name": "5. GET /clients?search=John â€” Paginated search (expect 200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns page with content', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.content).to.be.an('array');",
+              "  pm.expect(body.totalElements).to.be.at.least(1);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": {
+          "raw": "{{base_url}}/clients/api/v1/clients?search=John&page=0&size=10",
+          "host": ["{{base_url}}"],
+          "path": ["clients","api","v1","clients"],
+          "query": [
+            { "key": "search", "value": "John" },
+            { "key": "page",   "value": "0" },
+            { "key": "size",   "value": "10" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "6. PUT /clients/{id} â€” Update tier (expect 200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Tier updated to ENTERPRISE', () => {",
+              "  pm.expect(pm.response.json().tier).to.equal('ENTERPRISE');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type",  "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tier\": \"ENTERPRISE\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/clients/api/v1/clients/{{client_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["clients","api","v1","clients","{{client_id}}"]
+        }
+      }
+    },
+    {
+      "name": "7. POST /clients/{id}/contacts â€” Add contact (expect 201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+              "pm.test('Has contactId', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.contactId).to.be.a('number');",
+              "  pm.collectionVariables.set('contact_id', body.contactId);",
+              "});",
+              "pm.test('Has Location header', () => pm.expect(pm.response.headers.get('Location')).to.include('/contacts/'));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type",  "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"contactType\": \"PRIMARY\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Doe\",\n  \"email\": \"jane.doe@acme.com\",\n  \"phone\": \"+91-9876543211\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/clients/api/v1/clients/{{client_id}}/contacts",
+          "host": ["{{base_url}}"],
+          "path": ["clients","api","v1","clients","{{client_id}}","contacts"]
+        }
+      }
+    },
+    {
+      "name": "8. GET /clients/{id}/contacts â€” List contacts (expect 200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array').with.lengthOf.at.least(1));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": {
+          "raw": "{{base_url}}/clients/api/v1/clients/{{client_id}}/contacts",
+          "host": ["{{base_url}}"],
+          "path": ["clients","api","v1","clients","{{client_id}}","contacts"]
+        }
+      }
+    },
+    {
+      "name": "9. POST /clients/{id}/addresses â€” Add address (expect 201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+              "pm.test('Has addressId', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.addressId).to.be.a('number');",
+              "  pm.collectionVariables.set('address_id', body.addressId);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type",  "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"addressType\": \"BILLING\",\n  \"line1\": \"123 Business Park\",\n  \"city\": \"Mumbai\",\n  \"state\": \"Maharashtra\",\n  \"postalCode\": \"400001\",\n  \"country\": \"India\",\n  \"primary\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/clients/api/v1/clients/{{client_id}}/addresses",
+          "host": ["{{base_url}}"],
+          "path": ["clients","api","v1","clients","{{client_id}}","addresses"]
+        }
+      }
+    },
+    {
+      "name": "10. GET /clients/{id}/addresses â€” List addresses (expect 200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array').with.lengthOf.at.least(1));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": {
+          "raw": "{{base_url}}/clients/api/v1/clients/{{client_id}}/addresses",
+          "host": ["{{base_url}}"],
+          "path": ["clients","api","v1","clients","{{client_id}}","addresses"]
+        }
+      }
+    },
+    {
+      "name": "11. DELETE /clients/{id}/contacts/{contactId} â€” Delete contact (expect 204)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": ["pm.test('Status is 204', () => pm.response.to.have.status(204));"],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": {
+          "raw": "{{base_url}}/clients/api/v1/clients/{{client_id}}/contacts/{{contact_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["clients","api","v1","clients","{{client_id}}","contacts","{{contact_id}}"]
+        }
+      }
+    }
+  ]
+}

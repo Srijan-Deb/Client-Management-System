@@ -1,0 +1,14 @@
+-- =============================================================
+-- Client Service - V1 Initial Migration (Phase 0 placeholder)
+-- =============================================================
+-- This script intentionally contains no DDL.
+-- Flyway requires at least one migration file to be present;
+-- this placeholder satisfies that requirement and establishes
+-- the migration baseline at version 1.
+--
+-- Real schema will be created in:
+--   V2__create_clients_table.sql        (Phase 2)
+--   V3__create_contacts_addresses.sql   (Phase 2)
+--   V4__create_activity_logs.sql        (Phase 2)
+--   V5__create_support_tickets.sql      (Phase 6)
+-- =============================================================

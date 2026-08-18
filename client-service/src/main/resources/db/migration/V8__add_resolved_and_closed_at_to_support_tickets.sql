@@ -1,0 +1,3 @@
+ALTER TABLE support_tickets
+ADD COLUMN resolved_at TIMESTAMP NULL,
+ADD COLUMN closed_at TIMESTAMP NULL;

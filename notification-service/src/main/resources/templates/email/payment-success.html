@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Payment Received â€” CMS</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .header { background: linear-gradient(135deg, #43a047, #1b5e20); padding: 36px 32px; text-align: center; }
+        .header h1 { color: #fff; margin: 0; font-size: 24px; font-weight: 600; }
+        .body { padding: 36px 32px; color: #333; }
+        .success-icon { text-align: center; font-size: 48px; margin: 10px 0 20px; }
+        .receipt-box { background: #f1f8f4; border: 1px solid #c8e6c9; border-radius: 6px; padding: 18px 22px; margin: 16px 0; }
+        .receipt-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 14px; color: #444; }
+        .receipt-row.amount { font-weight: 700; font-size: 16px; color: #2e7d32; margin-top: 6px; }
+        .footer { background: #f9fafb; padding: 18px 32px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>âœ… Payment Received</h1>
+    </div>
+    <div class="body">
+        <div class="success-icon">ðŸ’³</div>
+        <p>Hi there, your payment has been successfully processed. Here's your receipt:</p>
+        <div class="receipt-box">
+            <div class="receipt-row"><span>Payment ID</span><span th:text="${paymentId}">â€”</span></div>
+            <div class="receipt-row"><span>Invoice #</span><span th:text="${invoiceNumber}">â€”</span></div>
+            <div class="receipt-row"><span>Payment Method</span><span th:text="${paymentMethod}">â€”</span></div>
+            <div class="receipt-row"><span>Date</span><span th:text="${paymentDate}">â€”</span></div>
+            <div class="receipt-row amount"><span>Amount Paid</span><span>$<span th:text="${amount}">0.00</span></span></div>
+        </div>
+        <p>Your invoice is now marked as <strong>PAID</strong>. Thank you for your payment.</p>
+        <p style="font-size:14px; color:#888; margin-top:28px;">Regards,<br/><strong style="color:#333;">CMS Billing Team</strong></p>
+    </div>
+    <div class="footer">Â© 2026 CMS Â· Enterprise Client Management System</div>
+</div>
+</body>
+</html>

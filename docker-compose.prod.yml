@@ -1,0 +1,109 @@
+# ==============================================================================
+# docker-compose.prod.yml - Production overlay for CMS
+# ==============================================================================
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# This file OVERRIDES settings from docker-compose.yml for production:
+#   - Services run from pre-built GHCR images (not built locally)
+#   - Resource limits enforced (mem_limit, cpus)
+#   - restart: always on all microservices
+#   - Health checks on all 4 microservices via /actuator/health
+#   - Structured JSON logging with rotation
+#   - No source code volume mounts
+#
+# Replace Srijan-Deb with your actual GitHub username/org.
+# ==============================================================================
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "5"
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 30s
+  timeout: 10s
+  retries: 5
+  start_period: 60s
+
+services:
+
+  # ── API Gateway ──────────────────────────────────────────────────────────────
+  api-gateway:
+    image: ghcr.io/Srijan-Deb/cms-api-gateway:latest
+    restart: always
+    mem_limit: 512m
+    cpus: "0.5"
+    logging: *default-logging
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "wget", "-qO-", "http://localhost:8090/actuator/health"]
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      MYSQL_USERNAME: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    # No build: section in prod overlay - image is pulled from GHCR
+
+  # ── Client Service ───────────────────────────────────────────────────────────
+  client-service:
+    image: ghcr.io/Srijan-Deb/cms-client-service:latest
+    restart: always
+    mem_limit: 768m
+    cpus: "0.75"
+    logging: *default-logging
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "wget", "-qO-", "http://localhost:8081/actuator/health"]
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      MYSQL_USERNAME: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+  # ── Account Service ──────────────────────────────────────────────────────────
+  account-service:
+    image: ghcr.io/Srijan-Deb/cms-account-service:latest
+    restart: always
+    mem_limit: 768m
+    cpus: "0.75"
+    logging: *default-logging
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "wget", "-qO-", "http://localhost:8082/actuator/health"]
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      MYSQL_USERNAME: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+  # ── Billing Service ──────────────────────────────────────────────────────────
+  billing-service:
+    image: ghcr.io/Srijan-Deb/cms-billing-service:latest
+    restart: always
+    mem_limit: 768m
+    cpus: "0.75"
+    logging: *default-logging
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "wget", "-qO-", "http://localhost:8083/actuator/health"]
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      MYSQL_USERNAME: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      STRIPE_API_KEY: ${STRIPE_API_KEY}
+
+  # ── Notification Service ─────────────────────────────────────────────────────
+  notification-service:
+    image: ghcr.io/Srijan-Deb/cms-notification-service:latest
+    restart: always
+    mem_limit: 512m
+    cpus: "0.5"
+    logging: *default-logging
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "wget", "-qO-", "http://localhost:8084/actuator/health"]
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      MYSQL_USERNAME: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}

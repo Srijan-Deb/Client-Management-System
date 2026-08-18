@@ -1,0 +1,15 @@
+apiVersion: v2
+name: cms
+description: Enterprise Client Management System - Helm chart for k3s/Kubernetes deployment
+type: application
+version: 0.1.0
+appVersion: "0.0.1-SNAPSHOT"
+keywords:
+  - cms
+  - microservices
+  - spring-boot
+  - java
+home: https://github.com/Srijan-Deb/Client-Management-System
+maintainers:
+  - name: CMS Team
+    email: team@example.com
