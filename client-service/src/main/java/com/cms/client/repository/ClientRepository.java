@@ -17,13 +17,7 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
 
     Optional<Client> findByEmail(String email);
 
-    /**
-     * Eagerly fetches contacts and addresses in a single JOIN query.
-     * Used by GET /clients/{id} to avoid LazyInitializationException outside a TX.
-     */
-    @EntityGraph(attributePaths = {"contacts", "addresses"})
-    @Query("SELECT c FROM Client c WHERE c.clientId = :id")
-    Optional<Client> findWithDetailsById(@Param("id") Long id);
+
 
     /**
      * Case-insensitive full-text search across first name, last name, and email.

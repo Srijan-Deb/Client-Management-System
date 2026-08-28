@@ -82,11 +82,11 @@ const PaymentModal = ({ invoice, clientEmail, onClose }: PaymentModalProps) => {
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
               <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>Subtotal</span>
-              <span>{invoice.currency} {invoice.subtotal.toFixed(2)}</span>
+              <span>{invoice.currency} {Number(invoice.subtotal).toFixed(2)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>Tax ({(invoice.taxRate * 100).toFixed(0)}%)</span>
-              <span>{invoice.currency} {invoice.taxAmount.toFixed(2)}</span>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>Tax ({(Number(invoice.taxRate) * 100).toFixed(0)}%)</span>
+              <span>{invoice.currency} {Number(invoice.taxAmount).toFixed(2)}</span>
             </div>
             <div style={{
               display: 'flex', justifyContent: 'space-between',
@@ -94,7 +94,7 @@ const PaymentModal = ({ invoice, clientEmail, onClose }: PaymentModalProps) => {
               fontWeight: 700, fontSize: '16px'
             }}>
               <span>Total</span>
-              <span style={{ color: 'var(--primary)' }}>{invoice.currency} {invoice.totalAmount.toFixed(2)}</span>
+              <span style={{ color: 'var(--primary)' }}>{invoice.currency} {Number(invoice.totalAmount).toFixed(2)}</span>
             </div>
           </div>
 
@@ -180,7 +180,7 @@ const PaymentModal = ({ invoice, clientEmail, onClose }: PaymentModalProps) => {
                   onClick={handlePay}
                   disabled={mutation.isPending || submitted}
                 >
-                  {mutation.isPending ? 'Processing…' : `Pay ${invoice.currency} ${invoice.totalAmount.toFixed(2)}`}
+                  {mutation.isPending ? 'Processing…' : `Pay ${invoice.currency} ${Number(invoice.totalAmount).toFixed(2)}`}
                 </button>
               </div>
             </>

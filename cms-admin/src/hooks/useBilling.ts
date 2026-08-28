@@ -16,7 +16,9 @@ export const useInvoices = (clientId?: number) =>
     queryKey: ['billing', 'invoices', clientId],
     queryFn: () => billingApi.listInvoices(clientId),
     enabled: true,
+    throwOnError: false, // Handle inline — don't crash the ErrorBoundary
   });
+
 
 // ─── Contracts ──────────────────────────────────────────────────────────────
 export const useCreateContract = () => {

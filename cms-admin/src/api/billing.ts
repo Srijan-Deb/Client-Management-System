@@ -32,6 +32,13 @@ export const billingApi = {
       .get(`${BASE}/invoices`, { params: clientId ? { clientId } : undefined })
       .then((r) => r.data),
 
+  // ─── PDF Download URL ─────────────────────────────────────────────────────
+  // Calls the backend to exchange the raw S3 object key for a pre-signed URL.
+  getPdfDownloadUrl: (objectKey: string): Promise<string> =>
+    api
+      .get(`${BASE}/invoices/pdf-url`, { params: { objectKey } })
+      .then((r) => r.data?.url ?? r.data),
+
   // ─── Payments ────────────────────────────────────────────────────────────
   processPayment: (body: PaymentRequest): Promise<PaymentResponse> =>
     api.post(`${BASE}/payments`, body).then((r) => r.data),

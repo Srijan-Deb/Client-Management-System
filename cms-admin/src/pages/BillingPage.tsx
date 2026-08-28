@@ -4,6 +4,7 @@ import { TableSkeleton } from '../components/TableSkeleton';
 import PaymentModal from '../components/PaymentModal';
 import { EmptyState } from '../components/EmptyState';
 import type { Invoice } from '../types/billing';
+import { billingApi } from '../api/billing';
 
 type Tab = 'products' | 'invoices';
 
@@ -19,7 +20,20 @@ const BillingPage = () => {
   const [payingInvoice, setPayingInvoice] = useState<Invoice | null>(null);
 
   const { data: products = [], isLoading: productsLoading } = useProducts();
-  const { data: invoices = [], isLoading: invoicesLoading } = useInvoices();
+  const {
+    data: invoices = [],
+    isLoading: invoicesLoading,
+    error: invoicesError,
+  } = useInvoices();
+
+  const handleDownloadPdf = async (pdfObjectKey: string) => {
+    try {
+      const url = await billingApi.getPdfDownloadUrl(pdfObjectKey);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch {
+      alert('Failed to generate download link. Please try again.');
+    }
+  };
 
   const tabs: { key: Tab; label: string; icon: string }[] = [
     { key: 'products', label: 'Product Catalog', icon: '📦' },
@@ -139,7 +153,15 @@ const BillingPage = () => {
         <div className="table-card">
           {invoicesLoading && <TableSkeleton rows={5} columns={6} />}
 
-          {!invoicesLoading && (
+          {!invoicesLoading && invoicesError && (
+            <EmptyState
+              icon="⚠️"
+              title="Failed to load invoices"
+              description={(invoicesError as any)?.response?.data?.message ?? 'An error occurred while fetching invoices. Please try again later.'}
+            />
+          )}
+
+          {!invoicesLoading && !invoicesError && (
             <table className="table">
               <thead>
                 <tr>
@@ -178,15 +200,13 @@ const BillingPage = () => {
                     </td>
                     <td className="td" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                       {inv.pdfObjectKey && (
-                        <a
-                          href={inv.pdfObjectKey}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <button
                           className="btn btn-ghost btn-sm"
                           title="Download PDF"
+                          onClick={() => handleDownloadPdf(inv.pdfObjectKey!)}
                         >
                           📄 PDF
-                        </a>
+                        </button>
                       )}
                       {inv.status === 'PENDING' && (
                         <button
@@ -204,6 +224,7 @@ const BillingPage = () => {
           )}
         </div>
       )}
+
 
       {/* Payment Modal */}
       {payingInvoice && (

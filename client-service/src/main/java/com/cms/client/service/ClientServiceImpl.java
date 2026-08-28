@@ -93,7 +93,7 @@ public class ClientServiceImpl implements ClientService {
         }
         log.debug("Cache MISS client:{}", id);
 
-        Client client = clientRepository.findWithDetailsById(id)
+        Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "CLIENT_NOT_FOUND", "Client not found with id: " + id));
 
@@ -121,7 +121,7 @@ public class ClientServiceImpl implements ClientService {
     public ClientResponse updateClient(Long id, UpdateClientRequest request, Jwt jwt) {
         Long userId = resolveUserId(jwt);
 
-        Client client = clientRepository.findWithDetailsById(id)
+        Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "CLIENT_NOT_FOUND", "Client not found with id: " + id));
 

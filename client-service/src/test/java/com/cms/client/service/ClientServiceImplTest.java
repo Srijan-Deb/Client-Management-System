@@ -181,7 +181,7 @@ class ClientServiceImplTest {
                 .status(ClientStatus.ACTIVE).build();
 
         when(valueOps.get("client:1")).thenReturn(null);
-        when(clientRepository.findWithDetailsById(1L)).thenReturn(Optional.of(entity));
+        when(clientRepository.findById(1L)).thenReturn(Optional.of(entity));
         when(clientMapper.toResponse(entity)).thenReturn(sampleResponse);
 
         ClientResponse result = clientService.getClientById(1L);
@@ -194,7 +194,7 @@ class ClientServiceImplTest {
     @DisplayName("getClientById: not found â€” 404 thrown")
     void getClientById_notFound_throws404() {
         when(valueOps.get("client:99")).thenReturn(null);
-        when(clientRepository.findWithDetailsById(99L)).thenReturn(Optional.empty());
+        when(clientRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> clientService.getClientById(99L))
                 .isInstanceOf(ResourceNotFoundException.class)
@@ -234,7 +234,7 @@ class ClientServiceImplTest {
         UpdateClientRequest req = UpdateClientRequest.builder()
                 .firstName("Johnny").tier(ClientTier.PREMIUM).build();
 
-        when(clientRepository.findWithDetailsById(1L)).thenReturn(Optional.of(entity));
+        when(clientRepository.findById(1L)).thenReturn(Optional.of(entity));
         when(clientRepository.save(entity)).thenReturn(entity);
         when(clientMapper.toResponse(entity)).thenReturn(sampleResponse);
 

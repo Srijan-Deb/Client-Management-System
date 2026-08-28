@@ -4,6 +4,7 @@ import com.cms.client.domain.enums.ClientStatus;
 import com.cms.client.domain.enums.ClientTier;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -80,10 +81,12 @@ public class Client {
     private Instant updatedAt;
 
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @BatchSize(size = 30)
     @Builder.Default
     private List<Contact> contacts = new ArrayList<>();
 
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @BatchSize(size = 30)
     @Builder.Default
     private List<Address> addresses = new ArrayList<>();
 
