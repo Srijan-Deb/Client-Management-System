@@ -89,4 +89,13 @@ public class ClientController {
         log.info("PUT /clients/{} by subject={}", id, jwt.getSubject());
         return ResponseEntity.ok(clientService.updateClient(id, request, jwt));
     }
+
+    /**
+     * Get activity logs for a client.
+     */
+    @GetMapping("/{id}/activity")
+    @PreAuthorize("hasAnyRole('admin', 'account_manager', 'support_agent')")
+    public ResponseEntity<java.util.List<com.cms.client.dto.response.ActivityLogResponse>> getActivityLogs(@PathVariable Long id) {
+        return ResponseEntity.ok(clientService.getClientActivityLogs(id));
+    }
 }

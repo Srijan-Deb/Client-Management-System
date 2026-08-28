@@ -1,6 +1,6 @@
 # CMS - Client Management System
 
-[![CI](https://github.com/Srijan-Deb/Client-Management-System/actions/workflows/ci.yml/badge.svg)](https://github.com/Srijan-Deb/Client-Management-System/actions/workflows/ci.yml)
+[![CI](https://github.com/srijan-deb/Client-Management-System/actions/workflows/ci.yml/badge.svg)](https://github.com/srijan-deb/Client-Management-System/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://openjdk.org/projects/jdk/21/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.2-brightgreen.svg)](https://spring.io/projects/spring-boot)
@@ -157,7 +157,7 @@ Push to main
     +-> [build-push] (main only)
             |
             +-> mvn spring-boot:build-image (Paketo Buildpacks)
-            +-> Push to ghcr.io/Srijan-Deb/cms-<service>:latest
+            +-> Push to ghcr.io/srijan-deb/cms-<service>:latest
 ```
 
 **Required GitHub Actions secrets:**

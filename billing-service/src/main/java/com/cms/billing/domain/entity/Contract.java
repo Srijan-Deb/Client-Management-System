@@ -11,7 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "contracts")
-public class Contract {
+public class Contract implements java.io.Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -158,3 +158,4 @@ public class Contract {
         this.updatedAt = updatedAt;
     }
 }
+

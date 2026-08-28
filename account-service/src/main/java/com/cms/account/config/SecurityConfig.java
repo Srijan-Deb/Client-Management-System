@@ -28,19 +28,20 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-                        // Internal service-to-service endpoint â€” no JWT required.
-                        // Called by Client Service during client onboarding.
-                        // Protected by Docker network isolation in Phase 2.
-                        // TODO Phase 8: replace with mTLS or API-key header auth.
-                        .requestMatchers("/api/v1/accounts/link/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(
-                                new CmsJwtAuthenticationConverter()))
-                )
+                .authorizeHttpRequests(auth -> {
+                        auth.requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                            // Internal service-to-service endpoint â€” no JWT required.
+                            // Called by Client Service during client onboarding.
+                            // Protected by Docker network isolation in Phase 2.
+                            // TODO Phase 8: replace with mTLS or API-key header auth.
+                            .requestMatchers("/api/v1/accounts/link/**").permitAll()
+                            .anyRequest().authenticated();
+                })
+                .oauth2ResourceServer(oauth2 -> {
+                        oauth2.jwt(jwt -> {
+                                jwt.jwtAuthenticationConverter(new CmsJwtAuthenticationConverter());
+                        });
+                })
                 // UserSyncFilter only applies to authenticated (JWT-bearing) requests
                 .addFilterAfter(userSyncFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

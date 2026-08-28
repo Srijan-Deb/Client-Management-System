@@ -24,6 +24,31 @@ volumes:
   grafana-data:         # Phase 7: Grafana dashboards/settings
 
 services:
+  # ───────────────────────────────────────────────────────────────────────────
+  # Frontend (React SPA)
+  # UI: http://localhost:4200
+  # ───────────────────────────────────────────────────────────────────────────
+  cms-admin:
+    build:
+      context: ./cms-admin
+      args:
+        # Pass the browser-facing URLs so Vite can bake them in during build
+        VITE_API_BASE_URL: "http://localhost:8090"
+        VITE_KEYCLOAK_URL: "http://localhost:8080"
+        VITE_KEYCLOAK_REALM: "cms"
+        VITE_KEYCLOAK_CLIENT_ID: "cms-admin"
+    container_name: cms-admin
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+    networks:
+      - cms-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://127.0.0.1/actuator/health/liveness || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 
   # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   # MySQL 8 â€” all CMS schemas + Keycloak DB on one instance
@@ -122,7 +147,7 @@ services:
     networks:
       - cms-network
     healthcheck:
-      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list > /dev/null 2>&1 || exit 1"]
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 10
@@ -300,6 +325,8 @@ services:
     restart: unless-stopped
     environment:
       COLLECTOR_OTLP_ENABLED: "true"
+      METRICS_STORAGE_TYPE: "prometheus"
+      PROMETHEUS_SERVER_URL: "http://prometheus:9090"
     ports:
       - "16686:16686"   # Jaeger UI
       - "4317:4317"     # OTLP gRPC (services â†’ Jaeger)

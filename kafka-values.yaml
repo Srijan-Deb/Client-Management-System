@@ -1,0 +1,9 @@
+replicaCount: 3
+kraft:
+  enabled: true
+extraEnvVars:
+  - name: KAFKA_CFG_NUM_PARTITIONS
+    value: "3"
+listeners:
+  client:
+    protocol: PLAINTEXT

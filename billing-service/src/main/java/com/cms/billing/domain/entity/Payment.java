@@ -6,7 +6,7 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "payments")
-public class Payment {
+public class Payment implements java.io.Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -71,3 +71,4 @@ public class Payment {
     public Instant getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
 }
+

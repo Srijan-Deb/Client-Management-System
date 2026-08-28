@@ -27,8 +27,9 @@ INSERT INTO product_categories (name, description) VALUES
 ('Add-ons', 'Additional features and modules');
 
 INSERT INTO products (name, description, price, currency, billing_cycle, category_id) VALUES
-('Basic Plan', 'Essential features for small teams', 29.00, 'USD', 'MONTHLY', (SELECT id FROM product_categories WHERE name = 'SaaS')),
-('Pro Plan', 'Advanced features for growing businesses', 99.00, 'USD', 'MONTHLY', (SELECT id FROM product_categories WHERE name = 'SaaS')),
-('Enterprise Plan', 'Full suite with dedicated support', 499.00, 'USD', 'MONTHLY', (SELECT id FROM product_categories WHERE name = 'SaaS')),
-('Annual Pro Plan', 'Pro plan billed annually (save 20%)', 950.00, 'USD', 'YEARLY', (SELECT id FROM product_categories WHERE name = 'SaaS')),
-('Premium Support', '24/7 phone and email support', 150.00, 'USD', 'MONTHLY', (SELECT id FROM product_categories WHERE name = 'Support'));
+('Basic Plan', 'Essential features for small teams', 9.00, 'INR', 'MONTHLY', (SELECT id FROM product_categories WHERE name = 'SaaS')),
+('Pro Plan', 'Advanced features for growing businesses', 799.00, 'INR', 'MONTHLY', (SELECT id FROM product_categories WHERE name = 'SaaS')),
+('Enterprise Plan', 'Full suite with dedicated support', 3999.00, 'INR', 'MONTHLY', (SELECT id FROM product_categories WHERE name = 'SaaS')),
+('Annual Pro Plan', 'Pro plan billed annually (save 20%)', 7599.00, 'INR', 'YEARLY', (SELECT id FROM product_categories WHERE name = 'SaaS')),
+('Premium Support', '24/7 phone and email support', 1199.00, 'INR', 'MONTHLY', (SELECT id FROM product_categories WHERE name = 'Support'));
+

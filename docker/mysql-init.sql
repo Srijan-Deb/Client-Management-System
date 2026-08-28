@@ -1,4 +1,4 @@
-﻿-- =============================================================
+-- =============================================================
 -- CMS MySQL Initialisation Script
 -- Runs once on first container start (docker-entrypoint-initdb.d)
 -- Creates all application schemas + grants to cms_user
@@ -35,5 +35,9 @@ GRANT ALL PRIVILEGES ON cms_account.*      TO 'cms_user'@'%';
 GRANT ALL PRIVILEGES ON cms_billing.*      TO 'cms_user'@'%';
 GRANT ALL PRIVILEGES ON cms_notification.* TO 'cms_user'@'%';
 GRANT ALL PRIVILEGES ON keycloak_db.*       TO 'cms_user'@'%';
+
+-- Create replication user for scalability proof
+CREATE USER IF NOT EXISTS 'replicator'@'%' IDENTIFIED BY 'repl_pass';
+GRANT REPLICATION SLAVE ON *.* TO 'replicator'@'%';
 
 FLUSH PRIVILEGES;

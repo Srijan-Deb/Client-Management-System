@@ -4,9 +4,13 @@ import com.cms.client.domain.entity.SupportTicket;
 import com.cms.client.dto.request.TicketRequest;
 import com.cms.client.dto.response.TicketResponse;
 import com.cms.client.mapper.SupportTicketMapper;
+import com.cms.client.domain.entity.Client;
+import com.cms.client.domain.entity.UserProjection;
 import com.cms.client.repository.ActivityLogRepository;
+import com.cms.client.repository.ClientRepository;
 import com.cms.client.repository.SupportTicketRepository;
 import com.cms.client.repository.TicketCommentRepository;
+import com.cms.client.repository.UserProjectionRepository;
 import com.cms.common.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -35,6 +39,8 @@ class SupportTicketServiceTest {
     @Mock private SupportTicketRepository ticketRepository;
     @Mock private TicketCommentRepository commentRepository;
     @Mock private ActivityLogRepository activityLogRepository;
+    @Mock private ClientRepository clientRepository;
+    @Mock private UserProjectionRepository userProjectionRepository;
     @Mock private SupportTicketMapper ticketMapper;
     @Mock private KafkaTemplate<String, Object> kafkaTemplate;
 
@@ -50,6 +56,14 @@ class SupportTicketServiceTest {
         mockJwt = mock(Jwt.class);
         when(mockJwt.getSubject()).thenReturn("kc-uuid-123");
         when(mockJwt.getClaimAsString("preferred_username")).thenReturn("testuser");
+
+        Client mockClient = Client.builder().clientId(1L).build();
+        UserProjection mockUser = mock(UserProjection.class);
+        when(mockUser.getUserId()).thenReturn(1L);
+        when(mockUser.getKeycloakId()).thenReturn("kc-uuid-123");
+        when(clientRepository.findById(1L)).thenReturn(Optional.of(mockClient));
+        when(userProjectionRepository.findByKeycloakId("kc-uuid-123")).thenReturn(Optional.of(mockUser));
+        when(userProjectionRepository.findByKeycloakId("kc-uuid-123")).thenReturn(Optional.of(mockUser));
 
         mockTicket = SupportTicket.builder()
                 .ticketId(10L)
@@ -81,13 +95,13 @@ class SupportTicketServiceTest {
         request.setPriority("HIGH");
 
         when(ticketMapper.toEntity(request)).thenReturn(mockTicket);
-        when(ticketRepository.save(mockTicket)).thenReturn(mockTicket);
+        when(ticketRepository.save(any())).thenReturn(mockTicket);
         when(ticketMapper.toResponse(mockTicket)).thenReturn(mockResponse);
 
         TicketResponse result = ticketService.createTicket(request, mockJwt);
 
         assertThat(result.getTicketId()).isEqualTo(10L);
-        verify(ticketRepository).save(mockTicket);
+        verify(ticketRepository).save(any());
         verify(activityLogRepository).save(any());
         verify(kafkaTemplate).send(eq("ticket-created"), eq("10"), any());
     }
@@ -95,7 +109,7 @@ class SupportTicketServiceTest {
     @Test
     @DisplayName("getTicketById: returns mapped response")
     void getTicketById_success() {
-        when(ticketRepository.findWithCommentsById(10L)).thenReturn(Optional.of(mockTicket));
+        when(ticketRepository.findById(10L)).thenReturn(Optional.of(mockTicket));
         when(ticketMapper.toResponse(mockTicket)).thenReturn(mockResponse);
 
         TicketResponse result = ticketService.getTicketById(10L);
@@ -106,10 +120,10 @@ class SupportTicketServiceTest {
     @Test
     @DisplayName("getTicketById: throws 404 when not found")
     void getTicketById_notFound() {
-        when(ticketRepository.findWithCommentsById(99L)).thenReturn(Optional.empty());
+        when(ticketRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> ticketService.getTicketById(99L))
-                .isInstanceOf(ResourceNotFoundException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

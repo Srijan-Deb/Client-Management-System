@@ -47,7 +47,7 @@ public class SupportTicketController {
     @GetMapping
     @PreAuthorize("hasAnyRole('client', 'admin', 'account_manager', 'support_agent')")
     public ResponseEntity<Page<TicketResponse>> getTicketsByClient(
-            @RequestParam Long clientId,
+            @RequestParam(required = false) Long clientId,
             @PageableDefault(size = 20) Pageable pageable) {
         log.info("GET /tickets?clientId={}", clientId);
         return ResponseEntity.ok(ticketService.getTicketsByClient(clientId, pageable));

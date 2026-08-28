@@ -8,8 +8,8 @@
 
 # Global settings shared by all services
 global:
-  # Replace Srijan-Deb with your actual GitHub username/org
-  imageRegistry: ghcr.io/Srijan-Deb
+  # Replace srijan-deb with your actual GitHub username/org
+  imageRegistry: ghcr.io/srijan-deb
   imageTag: latest
   imagePullPolicy: Always
   # imagePullSecrets:
@@ -18,9 +18,37 @@ global:
 # ── Service definitions ──────────────────────────────────────────────────────
 # Each service can override any of the defaults below independently
 services:
-  api-gateway:
+  cms-admin:
     enabled: true
     replicaCount: 1
+    image:
+      name: cms-admin
+    containerPort: 80
+    service:
+      port: 80
+      type: ClusterIP
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "250m"
+        memory: "256Mi"
+    env:
+      # These environment variables might be ignored if baked in at build time,
+      # but are kept here for consistency or if we switch to runtime injection.
+      VITE_API_BASE_URL: "http://api-gateway.cms.svc.cluster.local:8090"
+    ingress:
+      enabled: true
+      host: admin.cms.example.com
+      path: /
+      pathType: Prefix
+      annotations:
+        kubernetes.io/ingress.class: traefik
+
+  api-gateway:
+    enabled: true
+    replicaCount: 2
     image:
       name: cms-api-gateway
     containerPort: 8090
@@ -62,6 +90,7 @@ services:
         memory: "768Mi"
     env:
       SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_REPLICA_URL: "jdbc:mysql://cms-mysql-secondary:3306/cms_client?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8"
     ingress:
       enabled: false
 
@@ -109,7 +138,7 @@ services:
 
   notification-service:
     enabled: true
-    replicaCount: 1
+    replicaCount: 2
     image:
       name: cms-notification-service
     containerPort: 8084
@@ -139,7 +168,7 @@ config:
     host: cms-redis
     port: "6379"
   keycloak:
-    issuerUri: http://cms-keycloak:8080/realms/cms
+    issuerUri: http://host.k3d.internal:8080/realms/cms
   minio:
     endpoint: http://cms-minio:9000
   otel:
@@ -156,8 +185,8 @@ autoscaling:
 # Do NOT put real values here. Override via --set or a sealed-secrets file.
 secrets:
   mysqlUsername: ecms_user
-  mysqlPassword: ""         # Required - set via --set secrets.mysqlPassword=...
+  mysqlPassword: "cms_password"
   minioAccessKey: ecms_minio
-  minioSecretKey: ""
-  stripeApiKey: ""
-  keycloakAdminPassword: ""
+  minioSecretKey: "ecms_minio_secret"
+  stripeApiKey: "sk_test_123"
+  keycloakAdminPassword: "admin"

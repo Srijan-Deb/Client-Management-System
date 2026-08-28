@@ -84,7 +84,7 @@ public class GlobalExceptionHandler {
         log.error("Unhandled exception in billing-service", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                 "errorCode", "INTERNAL_ERROR",
-                "message",   "An unexpected error occurred. Please contact support.",
+                "message",   "An unexpected error occurred: " + ex.toString(),
                 "timestamp", Instant.now().toString()
         ));
     }

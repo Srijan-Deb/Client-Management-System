@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cms-mysql-primary
+spec:
+  serviceName: cms-mysql-primary
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cms-mysql-primary
+  template:
+    metadata:
+      labels:
+        app: cms-mysql-primary
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "cms_pass"
+        ports:
+        - containerPort: 3306
+        args:
+          - "--server-id=1"
+          - "--log-bin=mysql-bin"
+        volumeMounts:
+        - name: init-script
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: init-script
+        configMap:
+          name: mysql-init-script
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cms-mysql-primary
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: cms-mysql-primary

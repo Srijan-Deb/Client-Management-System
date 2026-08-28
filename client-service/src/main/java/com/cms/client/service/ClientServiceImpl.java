@@ -1,11 +1,14 @@
 package com.cms.client.service;
 
+import java.util.List;
+import com.cms.common.exception.ResourceNotFoundException;
 import com.cms.client.domain.entity.ActivityLog;
 import com.cms.client.domain.entity.Client;
 import com.cms.client.dto.request.CreateClientRequest;
 import com.cms.client.dto.request.UpdateClientRequest;
 import com.cms.client.dto.response.ClientResponse;
 import com.cms.client.dto.response.ClientSummaryResponse;
+import com.cms.client.dto.response.ActivityLogResponse;
 import com.cms.client.mapper.ClientMapper;
 import com.cms.client.repository.ActivityLogRepository;
 import com.cms.client.repository.ClientRepository;
@@ -148,12 +151,33 @@ public class ClientServiceImpl implements ClientService {
 
         client = clientRepository.save(client);
         ClientResponse response = clientMapper.toResponse(client);
-        // TX commits here â€” then evict + repopulate cache
+        // TX commits here — then evict + repopulate cache
         cacheClient(response);
         return response;
     }
 
-    // â”€â”€ Private helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    @Override
+    public List<ActivityLogResponse> getClientActivityLogs(Long id) {
+        // Ensure client exists
+        if (!clientRepository.existsById(id)) {
+            throw new ResourceNotFoundException("CLIENT_NOT_FOUND", "Client not found with id: " + id);
+        }
+        return activityLogRepository.findByClientIdOrderByCreatedAtDesc(id).stream()
+                .map(log -> ActivityLogResponse.builder()
+                        .logId(log.getLogId())
+                        .clientId(log.getClientId())
+                        .userId(log.getUserId())
+                        .action(log.getAction())
+                        .entityType(log.getEntityType())
+                        .entityId(log.getEntityId())
+                        .description(log.getDescription())
+                        .ipAddress(log.getIpAddress())
+                        .createdAt(log.getCreatedAt())
+                        .build())
+                .toList();
+    }
+
+    // ————————————————————————————————————————————————————————————————————————————————
 
     /**
      * Cache-aside email duplicate check.

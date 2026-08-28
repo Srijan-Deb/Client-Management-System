@@ -9,7 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "invoices")
-public class Invoice {
+public class Invoice implements java.io.Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -180,3 +180,4 @@ public class Invoice {
         this.updatedAt = updatedAt;
     }
 }
+

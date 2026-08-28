@@ -8,7 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "subscriptions")
-public class Subscription {
+public class Subscription implements java.io.Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -114,3 +114,4 @@ public class Subscription {
         this.updatedAt = updatedAt;
     }
 }
+

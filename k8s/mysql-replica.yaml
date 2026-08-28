@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cms-mysql-replica
+spec:
+  serviceName: cms-mysql-secondary
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cms-mysql-replica
+  template:
+    metadata:
+      labels:
+        app: cms-mysql-replica
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "cms_pass"
+        command: ["bash", "-c"]
+        args: 
+          - |
+            ORDINAL=${HOSTNAME##*-}
+            SERVER_ID=$((100 + ORDINAL))
+            docker-entrypoint.sh mysqld --server-id=$SERVER_ID --read-only=1 --relay-log=mysql-relay-bin
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: replica-init-script
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: replica-init-script
+        configMap:
+          name: mysql-replica-init-script
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-replica-init-script
+data:
+  init-replica.sql: |
+    CHANGE REPLICATION SOURCE TO 
+      SOURCE_HOST='cms-mysql-primary', 
+      SOURCE_USER='replicator', 
+      SOURCE_PASSWORD='repl_pass', 
+      SOURCE_SSL=0;
+    START REPLICA;
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cms-mysql-secondary
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: cms-mysql-replica

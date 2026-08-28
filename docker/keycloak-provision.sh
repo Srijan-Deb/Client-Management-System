@@ -101,6 +101,21 @@ result=$(http_post "$KC_URL/admin/realms/$REALM/clients" \
   }")
 [[ "$result" == "exists" ]] && skip "Client '$CLIENT_ID' already exists" || info "Client '$CLIENT_ID' created (secret: cms-backend-secret-dev)."
 
+section "Step 4.5: Create public client 'cms-admin'"
+result=$(http_post "$KC_URL/admin/realms/$REALM/clients" \
+  -d "{
+    \"clientId\": \"cms-admin\",
+    \"name\": \"CMS Admin Frontend\",
+    \"enabled\": true,
+    \"publicClient\": true,
+    \"standardFlowEnabled\": true,
+    \"directAccessGrantsEnabled\": false,
+    \"serviceAccountsEnabled\": false,
+    \"redirectUris\": [\"http://localhost:*\", \"http://127.0.0.1:*\"],
+    \"webOrigins\": [\"+\"]
+  }")
+[[ "$result" == "exists" ]] && skip "Client 'cms-admin' already exists" || info "Client 'cms-admin' created."
+
 # ─── Step 5: Create test user ────────────────────────────────────────────────
 section "Step 5: Create test user '$TEST_USER_EMAIL'"
 result=$(http_post "$KC_URL/admin/realms/$REALM/users" \

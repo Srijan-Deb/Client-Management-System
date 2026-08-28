@@ -1,0 +1,8 @@
+architecture: replication
+auth:
+  enabled: false
+master:
+  service:
+    name: redis
+sentinel:
+  enabled: true

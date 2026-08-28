@@ -6,9 +6,11 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.io.Serializable;
+
 @Entity
 @Table(name = "products")
-public class Product {
+public class Product implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,7 +26,7 @@ public class Product {
     private BigDecimal price;
 
     @Column(length = 3)
-    private String currency = "USD";
+    private String currency = "INR";
 
     @Column(name = "billing_cycle", nullable = false, length = 50)
     private String billingCycle;

@@ -9,7 +9,7 @@ spring:
 
   # â”€â”€ MySQL datasource â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   datasource:
-    url: jdbc:mysql://localhost:3307/cms_billing?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+    url: jdbc:mysql://cms-mysql:3306/cms_billing?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
     username: ${MYSQL_USERNAME:cms_user}
     password: ${MYSQL_PASSWORD:cms_pass}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -42,7 +42,7 @@ spring:
   # â”€â”€ Redis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   data:
     redis:
-      host: localhost
+      host: cms-redis
       port: 6379
       timeout: 2000ms
       lettuce:
@@ -53,7 +53,7 @@ spring:
 
   # â”€â”€ Kafka â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: cms-kafka:9092
     template:
       observation-enabled: true
     listener:
@@ -82,12 +82,12 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8080/realms/cms
+          issuer-uri: http://cms-keycloak:8080/realms/cms
 
   # â”€â”€ MinIO (Phase 5 â€” configured here so the bean can be
   #    registered without changing application.yml later) â”€â”€â”€â”€â”€â”€â”€â”€â”€
 minio:
-  endpoint: http://localhost:9000
+  endpoint: http://cms-minio:9000
   access-key: ${MINIO_ACCESS_KEY:cms_minio}
   secret-key: ${MINIO_SECRET_KEY:cms_minio_secret}
   bucket-name: cms-documents
@@ -136,7 +136,7 @@ logging:
 otel:
   exporter:
     otlp:
-      endpoint: http://localhost:4317
+      endpoint: http://cms-jaeger:4317
       protocol: grpc
   resource:
     attributes:

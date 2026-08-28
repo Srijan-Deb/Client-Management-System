@@ -225,6 +225,9 @@ public class SupportTicketService {
 
     @Transactional(readOnly = true)
     public Page<TicketResponse> getTicketsByClient(Long clientId, Pageable pageable) {
+        if (clientId == null) {
+            return ticketRepository.findAll(pageable).map(this::mapToResponse);
+        }
         return ticketRepository.findByClientId(clientId, pageable)
                 .map(this::mapToResponse);
     }

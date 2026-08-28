@@ -153,9 +153,9 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <image>
-                        <name>ghcr.io/Srijan-Deb/cms-${project.artifactId}:${project.version}</name>
+                        <name>ghcr.io/srijan-deb/cms-${project.artifactId}:${project.version}</name>
                         <tags>
-                            <tag>ghcr.io/Srijan-Deb/cms-${project.artifactId}:latest</tag>
+                            <tag>ghcr.io/srijan-deb/cms-${project.artifactId}:latest</tag>
                         </tags>
                         <builder>paketobuildpacks/builder-jammy-base:latest</builder>
                         <env>

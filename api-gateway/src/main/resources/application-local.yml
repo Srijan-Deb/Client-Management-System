@@ -1,0 +1,30 @@
+spring:
+  data:
+    redis:
+      host: localhost
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/cms
+  cloud:
+    gateway:
+      routes:
+        - id: client-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/clients/**
+          filters:
+            - RewritePath=/clients/(?<segment>.*), /${segment}
+        - id: account-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/accounts/**
+          filters:
+            - RewritePath=/accounts/(?<segment>.*), /${segment}
+        - id: billing-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/billing/**
+          filters:
+            - RewritePath=/billing/(?<segment>.*), /${segment}

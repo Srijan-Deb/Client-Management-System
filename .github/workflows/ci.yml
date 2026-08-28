@@ -19,8 +19,8 @@ on:
 env:
   JAVA_VERSION: "21"
   REGISTRY: ghcr.io
-  # Replace Srijan-Deb with your actual GitHub username/org
-  IMAGE_PREFIX: ghcr.io/Srijan-Deb
+  # Replace srijan-deb with your actual GitHub username/org
+  IMAGE_PREFIX: ghcr.io/srijan-deb
 
 jobs:
   # ============================================================================
@@ -80,7 +80,46 @@ jobs:
           fail-on-error: false
 
   # ============================================================================
-  # JOB 2: sonar
+  # JOB 2: frontend-test
+  # Runs Vitest (unit/component) and Playwright (E2E) tests for cms-admin.
+  # ============================================================================
+  frontend-test:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./cms-admin
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ./cms-admin/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run unit & component tests (Vitest)
+        run: npm run test -- --run
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run E2E tests (Playwright)
+        run: npm run test:e2e
+        env:
+          CI: true
+
+  # ============================================================================
+  # JOB 3: sonar
   # Runs after tests pass. Sends analysis to SonarCloud (free for public repos)
   # or a self-hosted SonarQube instance.
   #
@@ -171,8 +210,13 @@ jobs:
             artifact: account-service
           - name: billing-service
             artifact: billing-service
+            type: spring-boot
           - name: notification-service
             artifact: notification-service
+            type: spring-boot
+          - name: cms-admin
+            artifact: admin
+            type: frontend
 
     steps:
       - name: Checkout source
@@ -207,9 +251,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Paketo Buildpacks produces a layered, non-root OCI image.
-      # The image name/tag is configured in each service's pom.xml.
-      - name: Build and push image for ${{ matrix.service.name }}
+      # ─── Spring Boot Buildpacks Build ───
+      - name: Build and push Spring Boot image for ${{ matrix.service.name }}
+        if: matrix.service.type == 'spring-boot' || matrix.service.type == ''
         run: |
           mvn --batch-mode --no-transfer-progress \
               -DskipTests \
@@ -218,10 +262,23 @@ jobs:
               -Dspring-boot.build-image.publish=true \
               -Dspring-boot.build-image.builder=paketobuildpacks/builder-jammy-base:latest
         env:
-          # The Buildpacks publisher uses these to authenticate with GHCR
           DOCKER_PUBLISH_REGISTRY_ADDRESS: ${{ env.REGISTRY }}
           DOCKER_PUBLISH_REGISTRY_USERNAME: ${{ github.actor }}
           DOCKER_PUBLISH_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+      # ─── Frontend Docker Build ───
+      - name: Build and push Frontend image
+        if: matrix.service.type == 'frontend'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ matrix.service.name }}
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/cms-${{ matrix.service.artifact }}:latest
+          build-args: |
+            VITE_API_BASE_URL=http://cms.example.com/api
+            VITE_KEYCLOAK_URL=http://auth.example.com
+            VITE_KEYCLOAK_REALM=cms
+            VITE_KEYCLOAK_CLIENT_ID=cms-admin
 
       - name: Image digest summary
         run: |

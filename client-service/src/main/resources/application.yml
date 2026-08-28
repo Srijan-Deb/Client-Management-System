@@ -9,17 +9,30 @@ spring:
 
   # â”€â”€ MySQL datasource â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   datasource:
-    url: jdbc:mysql://localhost:3307/cms_client?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
-    username: ${MYSQL_USERNAME:cms_user}
-    password: ${MYSQL_PASSWORD:cms_pass}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    hikari:
-      pool-name: client-service-pool
-      maximum-pool-size: 10
-      minimum-idle: 2
-      connection-timeout: 30000
-      idle-timeout: 600000
-      max-lifetime: 1800000
+    primary:
+      url: jdbc:mysql://cms-mysql:3306/cms_client?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+      username: ${MYSQL_USERNAME:cms_user}
+      password: ${MYSQL_PASSWORD:cms_pass}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        pool-name: client-service-primary-pool
+        maximum-pool-size: 10
+        minimum-idle: 2
+        connection-timeout: 30000
+        idle-timeout: 600000
+        max-lifetime: 1800000
+    replica:
+      url: ${SPRING_DATASOURCE_REPLICA_URL:jdbc:mysql://cms-mysql:3306/cms_client?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8}
+      username: ${MYSQL_USERNAME:cms_user}
+      password: ${MYSQL_PASSWORD:cms_pass}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        pool-name: client-service-replica-pool
+        maximum-pool-size: 10
+        minimum-idle: 2
+        connection-timeout: 30000
+        idle-timeout: 600000
+        max-lifetime: 1800000
 
   # â”€â”€ JPA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   jpa:
@@ -42,7 +55,7 @@ spring:
   # â”€â”€ Redis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   data:
     redis:
-      host: localhost
+      host: cms-redis
       port: 6379
       timeout: 2000ms
       lettuce:
@@ -53,7 +66,7 @@ spring:
 
   # â”€â”€ Kafka â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: cms-kafka:9092
     template:
       observation-enabled: true
     listener:
@@ -79,7 +92,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8080/realms/cms
+          issuer-uri: http://cms-keycloak:8080/realms/cms
 
   # â”€â”€ Spring Cache â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   cache:
@@ -127,7 +140,7 @@ logging:
 otel:
   exporter:
     otlp:
-      endpoint: http://localhost:4317
+      endpoint: http://cms-jaeger:4317
       protocol: grpc
   resource:
     attributes:
@@ -135,7 +148,7 @@ otel:
 
 # â”€â”€ Inter-service URLs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 account-service:
-  url: http://localhost:8082
+  url: http://account-service:8082
 
 # â”€â”€ Resilience4j (circuit breaker on Account Service HTTP call) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #

@@ -31,6 +31,8 @@ public class GatewaySecurityConfig {
                         .pathMatchers("/actuator/health", "/actuator/info").permitAll()
                         // Keycloak token endpoint proxied through gateway (optional convenience)
                         .pathMatchers(HttpMethod.POST, "/realms/*/protocol/openid-connect/token").permitAll()
+                        // Allow CORS preflight requests
+                        .pathMatchers(HttpMethod.OPTIONS).permitAll()
                         // All other routes require a valid JWT
                         .anyExchange().authenticated()
                 )

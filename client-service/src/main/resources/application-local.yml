@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    primary:
+      url: jdbc:mysql://localhost:3307/cms_client?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+    replica:
+      url: jdbc:mysql://localhost:3307/cms_client?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+  data:
+    redis:
+      host: localhost
+  kafka:
+    bootstrap-servers: localhost:9092
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/cms
+
+account-service:
+  url: http://localhost:8082

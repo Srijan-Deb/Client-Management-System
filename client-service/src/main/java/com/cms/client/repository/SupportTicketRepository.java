@@ -12,6 +12,7 @@ import java.util.List;
 public interface SupportTicketRepository extends JpaRepository<SupportTicket, Long> {
     Page<SupportTicket> findByClientId(Long clientId, Pageable pageable);
     List<SupportTicket> findByAssignedTo(Long userId);
+    long countByStatus(String status);
 
     @org.springframework.data.jpa.repository.Query("SELECT t FROM SupportTicket t LEFT JOIN FETCH t.comments WHERE t.ticketId = :ticketId")
     java.util.Optional<SupportTicket> findWithCommentsById(@org.springframework.data.repository.query.Param("ticketId") Long ticketId);

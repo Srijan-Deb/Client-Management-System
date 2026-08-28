@@ -71,10 +71,10 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <image>
-                        <!-- Replace Srijan-Deb with your GitHub username/org -->
-                        <name>ghcr.io/Srijan-Deb/cms-${project.artifactId}:${project.version}</name>
+                        <!-- Replace srijan-deb with your GitHub username/org -->
+                        <name>ghcr.io/srijan-deb/cms-${project.artifactId}:${project.version}</name>
                         <tags>
-                            <tag>ghcr.io/Srijan-Deb/cms-${project.artifactId}:latest</tag>
+                            <tag>ghcr.io/srijan-deb/cms-${project.artifactId}:latest</tag>
                         </tags>
                         <!-- Paketo Buildpacks - produces minimal layered OCI image -->
                         <builder>paketobuildpacks/builder-jammy-base:latest</builder>
