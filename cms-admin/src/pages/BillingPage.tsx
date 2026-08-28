@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useProducts, useInvoices } from '../hooks/useBilling';
 import { TableSkeleton } from '../components/TableSkeleton';
 import PaymentModal from '../components/PaymentModal';
 import { EmptyState } from '../components/EmptyState';
 import type { Invoice } from '../types/billing';
 import { billingApi } from '../api/billing';
+import { LiveDonutChart } from '../components/charts/LiveDonutChart';
+import { LiveBarChart } from '../components/charts/LiveBarChart';
 
 type Tab = 'products' | 'invoices';
 
@@ -34,6 +36,26 @@ const BillingPage = () => {
       alert('Failed to generate download link. Please try again.');
     }
   };
+
+  const invoiceStatusChartData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    invoices.forEach((inv) => { counts[inv.status] = (counts[inv.status] ?? 0) + 1; });
+    const COLORS: Record<string, string> = {
+      PAID: '#10b981', PENDING: '#f59e0b', OVERDUE: '#ef4444', CANCELLED: '#94a3b8',
+    };
+    return Object.entries(counts).map(([s, v]) => ({ name: s, value: v, color: COLORS[s] ?? '#8b91b0' }));
+  }, [invoices]);
+
+  const invoiceAmountByStatus = useMemo(() => {
+    const totals: Record<string, number> = {};
+    invoices.forEach((inv) => {
+      totals[inv.status] = (totals[inv.status] ?? 0) + Number(inv.totalAmount);
+    });
+    const COLORS: Record<string, string> = {
+      PAID: '#10b981', PENDING: '#f59e0b', OVERDUE: '#ef4444', CANCELLED: '#94a3b8',
+    };
+    return Object.entries(totals).map(([s, v]) => ({ label: s, value: Math.round(v), color: COLORS[s] ?? '#8b91b0' }));
+  }, [invoices]);
 
   const tabs: { key: Tab; label: string; icon: string }[] = [
     { key: 'products', label: 'Product Catalog', icon: '📦' },
@@ -150,8 +172,28 @@ const BillingPage = () => {
 
       {/* ── Invoices ────────────────────────────────────────────────────── */}
       {activeTab === 'invoices' && (
-        <div className="table-card">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Chart row — only shown when there are invoices */}
+          {!invoicesLoading && !invoicesError && invoices.length > 0 && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+              <LiveDonutChart
+                title="🧾 Invoice Distribution"
+                data={invoiceStatusChartData}
+                centerLabel="invoices"
+                height={220}
+              />
+              <LiveBarChart
+                title="💰 Revenue by Status"
+                data={invoiceAmountByStatus}
+                height={220}
+                valuePrefix="₹"
+              />
+            </div>
+          )}
+
+          <div className="table-card">
           {invoicesLoading && <TableSkeleton rows={5} columns={6} />}
+
 
           {!invoicesLoading && invoicesError && (
             <EmptyState
@@ -222,6 +264,7 @@ const BillingPage = () => {
               </tbody>
             </table>
           )}
+        </div>
         </div>
       )}
 
