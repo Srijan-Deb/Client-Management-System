@@ -11,6 +11,7 @@ import com.cms.client.repository.SupportTicketRepository;
 import com.cms.client.repository.TicketCommentRepository;
 import com.cms.client.repository.UserProjectionRepository;
 import com.cms.common.event.TicketCreatedEvent;
+import com.cms.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -38,10 +39,10 @@ public class SupportTicketService {
     @Transactional
     public TicketResponse createTicket(TicketRequest request, Jwt jwt) {
         Client client = clientRepository.findById(request.getClientId())
-                .orElseThrow(() -> new IllegalArgumentException("Client not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("CLIENT_NOT_FOUND", "Client not found"));
 
         UserProjection user = userProjectionRepository.findByKeycloakId(jwt.getSubject())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("USER_NOT_FOUND", "User not found"));
 
         SupportTicket ticket = SupportTicket.builder()
                 .clientId(request.getClientId())
@@ -92,10 +93,10 @@ public class SupportTicketService {
     @Transactional
     public TicketResponse assignTicket(Long ticketId, Long agentId, Jwt jwt) {
         SupportTicket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("TICKET_NOT_FOUND", "Ticket not found"));
 
         UserProjection user = userProjectionRepository.findByKeycloakId(jwt.getSubject())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("USER_NOT_FOUND", "User not found"));
 
         ticket.setAssignedTo(agentId);
         ticket.setStatus("IN_PROGRESS");
@@ -117,10 +118,10 @@ public class SupportTicketService {
     @Transactional
     public TicketResponse resolveTicket(Long ticketId, Jwt jwt) {
         SupportTicket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("TICKET_NOT_FOUND", "Ticket not found"));
 
         UserProjection user = userProjectionRepository.findByKeycloakId(jwt.getSubject())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("USER_NOT_FOUND", "User not found"));
 
         ticket.setStatus("RESOLVED");
         SupportTicket savedTicket = ticketRepository.save(ticket);
@@ -141,10 +142,10 @@ public class SupportTicketService {
     @Transactional
     public TicketResponse reopenTicket(Long ticketId, Jwt jwt) {
         SupportTicket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("TICKET_NOT_FOUND", "Ticket not found"));
 
         UserProjection user = userProjectionRepository.findByKeycloakId(jwt.getSubject())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("USER_NOT_FOUND", "User not found"));
 
         ticket.setStatus("OPEN");
         SupportTicket savedTicket = ticketRepository.save(ticket);
@@ -165,10 +166,10 @@ public class SupportTicketService {
     @Transactional
     public TicketResponse addComment(Long ticketId, TicketCommentRequest request, Jwt jwt) {
         SupportTicket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("TICKET_NOT_FOUND", "Ticket not found"));
 
         UserProjection user = userProjectionRepository.findByKeycloakId(jwt.getSubject())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("USER_NOT_FOUND", "User not found"));
 
         TicketComment comment = TicketComment.builder()
                 .ticket(ticket)
@@ -195,10 +196,10 @@ public class SupportTicketService {
     @Transactional
     public TicketResponse closeTicket(Long ticketId, Jwt jwt) {
         SupportTicket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("TICKET_NOT_FOUND", "Ticket not found"));
 
         UserProjection user = userProjectionRepository.findByKeycloakId(jwt.getSubject())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("USER_NOT_FOUND", "User not found"));
 
         ticket.setStatus("CLOSED");
         SupportTicket savedTicket = ticketRepository.save(ticket);
@@ -219,7 +220,7 @@ public class SupportTicketService {
     @Transactional(readOnly = true)
     public TicketResponse getTicketById(Long ticketId) {
         SupportTicket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new IllegalArgumentException("Ticket not found: " + ticketId));
+                .orElseThrow(() -> new ResourceNotFoundException("TICKET_NOT_FOUND", "Ticket not found: " + ticketId));
         return mapToResponse(ticket);
     }
 

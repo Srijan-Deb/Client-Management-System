@@ -41,7 +41,6 @@ class SupportTicketServiceTest {
     @Mock private ActivityLogRepository activityLogRepository;
     @Mock private ClientRepository clientRepository;
     @Mock private UserProjectionRepository userProjectionRepository;
-    @Mock private SupportTicketMapper ticketMapper;
     @Mock private KafkaTemplate<String, Object> kafkaTemplate;
 
     @InjectMocks
@@ -94,23 +93,20 @@ class SupportTicketServiceTest {
         request.setCategory("AUTH");
         request.setPriority("HIGH");
 
-        when(ticketMapper.toEntity(request)).thenReturn(mockTicket);
         when(ticketRepository.save(any())).thenReturn(mockTicket);
-        when(ticketMapper.toResponse(mockTicket)).thenReturn(mockResponse);
 
         TicketResponse result = ticketService.createTicket(request, mockJwt);
 
         assertThat(result.getTicketId()).isEqualTo(10L);
         verify(ticketRepository).save(any());
         verify(activityLogRepository).save(any());
-        verify(kafkaTemplate).send(eq("ticket-created"), eq("10"), any());
+        verify(kafkaTemplate).send(eq("ticket-created"), any());
     }
 
     @Test
     @DisplayName("getTicketById: returns mapped response")
     void getTicketById_success() {
         when(ticketRepository.findById(10L)).thenReturn(Optional.of(mockTicket));
-        when(ticketMapper.toResponse(mockTicket)).thenReturn(mockResponse);
 
         TicketResponse result = ticketService.getTicketById(10L);
 
@@ -123,7 +119,7 @@ class SupportTicketServiceTest {
         when(ticketRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> ticketService.getTicketById(99L))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
@@ -137,9 +133,6 @@ class SupportTicketServiceTest {
                 .build();
                 
         when(ticketRepository.save(any())).thenReturn(closedTicket);
-        when(ticketMapper.toResponse(closedTicket)).thenReturn(
-                TicketResponse.builder().ticketId(10L).status("CLOSED").build()
-        );
 
         TicketResponse result = ticketService.closeTicket(10L, mockJwt);
 

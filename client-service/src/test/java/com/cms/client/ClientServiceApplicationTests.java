@@ -18,9 +18,12 @@ import org.springframework.test.context.ActiveProfiles;
  */
 @SpringBootTest(
         properties = {
-                "spring.datasource.url=jdbc:h2:mem:testdb;MODE=MYSQL",
-                "spring.datasource.driver-class-name=org.h2.Driver",
+                "spring.datasource.primary.url=jdbc:h2:mem:testdb;MODE=MYSQL",
+                "spring.datasource.primary.driver-class-name=org.h2.Driver",
+                "spring.datasource.replica.url=jdbc:h2:mem:testdb;MODE=MYSQL",
+                "spring.datasource.replica.driver-class-name=org.h2.Driver",
                 "spring.jpa.hibernate.ddl-auto=create-drop",
+                "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
                 "spring.flyway.enabled=false",
                 "spring.cache.type=simple",
                 "spring.kafka.bootstrap-servers=localhost:19092",
