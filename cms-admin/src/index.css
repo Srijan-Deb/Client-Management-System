@@ -444,14 +444,68 @@ html, body, #root {
 
 .login-page {
   min-height: 100vh;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse at 60% 20%, rgba(99, 102, 241, 0.12) 0%, transparent 60%),
-              var(--bg-base);
+  /* Richer gradient background */
+  background:
+    radial-gradient(ellipse at 15% 85%, rgba(168, 85, 247, 0.10) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 15%, rgba(99, 102, 241, 0.14) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 70%),
+    var(--bg-base);
+  overflow: hidden;
 }
 
+/* ── Floating emoji background container ── */
+.login-emoji-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* ── Individual emoji particle ── */
+.login-emoji-particle {
+  position: absolute;
+  bottom: -80px;          /* start below viewport */
+  line-height: 1;
+  user-select: none;
+  animation: floatUp linear infinite;
+  will-change: transform, opacity;
+  filter: blur(0.4px);
+}
+
+/* Float up, drift side-to-side slightly, and rotate */
+@keyframes floatUp {
+  0% {
+    transform: translateY(0)   translateX(0)   rotate(0deg)    scale(0.8);
+    opacity: var(--start-opacity, 0);
+  }
+  8% {
+    opacity: inherit; /* reach full opacity quickly */
+  }
+  45% {
+    transform: translateY(-45vh) translateX(18px)  rotate(calc(var(--rotate-end, 20deg) * 0.5)) scale(1.05);
+  }
+  55% {
+    transform: translateY(-55vh) translateX(-8px)  rotate(calc(var(--rotate-end, 20deg) * 0.7)) scale(1.0);
+  }
+  92% {
+    opacity: inherit;
+  }
+  100% {
+    transform: translateY(-110vh) translateX(12px) rotate(var(--rotate-end, 20deg)) scale(0.85);
+    opacity: 0;
+  }
+}
+
+/* Make the login card sit above the emoji layer */
 .login-card {
+  position: relative;
+  z-index: 1;
+
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: 20px;

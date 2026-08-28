@@ -5,8 +5,45 @@ import { AuthProvider, useAuth } from './auth/AuthProvider';
 import { ProtectedRoute } from './auth/ProtectedRoute';
 import { ThemeProvider } from './lib/ThemeProvider';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import React, { Suspense } from 'react';
+import React, { Suspense, useMemo } from 'react';
 import AppShell from './components/AppShell';
+
+const CMS_EMOJIS = ['👥','📄','💳','🎫','🏢','📊','📈','💼','🔔','📧','🤝','📋','🗂️','💰','🔑','📱','⭐','🏆','📝','🔒'];
+
+const FloatingEmojis = () => {
+  const particles = useMemo(() =>
+    Array.from({ length: 30 }, (_, i) => ({
+      id: i,
+      emoji: CMS_EMOJIS[i % CMS_EMOJIS.length],
+      left: `${((i * 3.33) + Math.sin(i * 1.7) * 10 + 50) % 100}%`,
+      size: 16 + (i % 5) * 7,
+      duration: 14 + (i % 8) * 2.5,
+      delay: -(i * 1.55),
+      opacity: 0.07 + (i % 4) * 0.04,
+      rotate: (i % 2 === 0 ? 1 : -1) * (8 + (i % 4) * 12),
+    })), []
+  );
+  return (
+    <div className="login-emoji-bg" aria-hidden="true">
+      {particles.map((p) => (
+        <span
+          key={p.id}
+          className="login-emoji-particle"
+          style={{
+            left: p.left,
+            fontSize: `${p.size}px`,
+            animationDuration: `${p.duration}s`,
+            animationDelay: `${p.delay}s`,
+            opacity: p.opacity,
+            '--rotate-end': `${p.rotate}deg`,
+          } as React.CSSProperties}
+        >
+          {p.emoji}
+        </span>
+      ))}
+    </div>
+  );
+};
 
 const DashboardPage = React.lazy(() => import('./pages/DashboardPage'));
 const ClientsPage = React.lazy(() => import('./pages/ClientsPage'));
@@ -53,6 +90,7 @@ const LoginPage = () => {
 
   return (
     <div className="login-page">
+      <FloatingEmojis />
       <div className="login-card">
         <div className="login-logo">
           <div className="logo-icon login-logo-icon">C</div>
