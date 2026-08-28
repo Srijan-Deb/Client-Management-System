@@ -101,7 +101,7 @@ describe('ClientsPage', () => {
     render(<ClientsPage />, { wrapper });
     await waitFor(() => expect(screen.getByText(/no clients found/i)).toBeInTheDocument());
 
-    await userEvent.click(screen.getByRole('button', { name: /new client/i }));
+    await userEvent.click(screen.getAllByRole('button', { name: /new client/i })[0]);
     expect(screen.getByRole('heading', { name: /new client/i })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /create client/i }));
