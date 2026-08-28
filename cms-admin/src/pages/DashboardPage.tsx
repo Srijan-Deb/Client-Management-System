@@ -141,7 +141,11 @@ const DashboardPage = () => {
   const allTickets = recentTicketsData?.content ?? [];
   const recentTickets = allTickets.slice(0, 5);
 
-  const { data: invoices = [] } = useInvoices();
+  const { data: invoicesData } = useInvoices();
+  // API may return a paginated Page<Invoice> OR a plain Invoice[] depending on backend version
+  const invoices = Array.isArray(invoicesData)
+    ? invoicesData
+    : (invoicesData as any)?.content ?? [];
 
   // ── Derived chart data ──────────────────────────────────────────────────────
   const clientGrowthData = useMemo(() => buildClientGrowthData(recentClients), [recentClients]);

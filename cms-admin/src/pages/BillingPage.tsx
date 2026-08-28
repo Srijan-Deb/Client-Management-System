@@ -23,10 +23,14 @@ const BillingPage = () => {
 
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const {
-    data: invoices = [],
+    data: invoicesData,
     isLoading: invoicesLoading,
     error: invoicesError,
   } = useInvoices();
+  // API may return Page<Invoice> (paginated) or Invoice[] (plain) — handle both
+  const invoices = Array.isArray(invoicesData)
+    ? invoicesData
+    : (invoicesData as any)?.content ?? [];
 
   const handleDownloadPdf = async (pdfObjectKey: string) => {
     try {
