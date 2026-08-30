@@ -21,10 +21,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    @SuppressWarnings("java:S4502") // Suppress SonarQube CSRF warning: Safe because API is stateless (JWT)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-                .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
