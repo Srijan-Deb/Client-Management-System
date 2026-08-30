@@ -111,7 +111,7 @@ public class AccountServiceClient {
      * <p>Throws {@link ServiceUnavailableException} so the caller's
      * {@code @Transactional} boundary rolls back the client INSERT atomically.
      */
-    @SuppressWarnings("unused") // called reflectively by Resilience4j
+    // called reflectively by Resilience4j
     Long linkFallback(Long clientId, String firstName, String lastName,
                       String email, Throwable cause) {
         log.error("Circuit breaker OPEN or call failed for clientId={}: {}",
