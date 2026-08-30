@@ -40,6 +40,15 @@
             <artifactId>spring-web</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
         <!-- Spring Security OAuth2 Resource Server â€” needed for CmsJwtAuthenticationConverter.
              Marked optional so downstream modules that don't need security don't inherit it.
              All 4 service POMs already declare spring-boot-starter-oauth2-resource-server. -->
