@@ -134,12 +134,14 @@ class CreateClientIT {
 
         // â”€â”€ Assert: HTTP 201 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getClientId()).isPositive();
-        assertThat(response.getBody().getAccountId()).isEqualTo(999L);
-        assertThat(response.getBody().getEmail()).isEqualTo("jane.smith@example.com");
+        
+        ClientResponse body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body.getClientId()).isPositive();
+        assertThat(body.getAccountId()).isEqualTo(999L);
+        assertThat(body.getEmail()).isEqualTo("jane.smith@example.com");
 
-        Long clientId = response.getBody().getClientId();
+        Long clientId = body.getClientId();
 
         // â”€â”€ Assert: DB row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         Integer count = jdbcTemplate.queryForObject(
@@ -169,12 +171,16 @@ class CreateClientIT {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        ResponseEntity<Map> response = restTemplate.postForEntity(
-                "/api/v1/clients", new HttpEntity<>(req, headers), Map.class);
+        ResponseEntity<java.util.Map> response = restTemplate.postForEntity(
+                "/api/v1/clients", new HttpEntity<>(req, headers), java.util.Map.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
-        assertThat(response.getBody()).containsKey("errorCode");
-        assertThat(response.getBody().get("errorCode")).isEqualTo("DUPLICATE_EMAIL");
+        
+        @SuppressWarnings("unchecked")
+        java.util.Map<String, Object> body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body).containsKey("errorCode");
+        assertThat(body.get("errorCode")).isEqualTo("DUPLICATE_EMAIL");
     }
 
     // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

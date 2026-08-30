@@ -20,15 +20,8 @@ class MapperScanTest {
 
         Set<BeanDefinition> candidates = provider.findCandidateComponents("com.cms.client.mapper");
 
-        for (BeanDefinition bd : candidates) {
-            System.out.println("FOUND BEAN: " + bd.getBeanClassName());
-        }
-
-        // Assert that the mapper package is not empty
         assertFalse(candidates.isEmpty(), "No mapper beans found in com.cms.client.mapper package");
 
-        // Assert that exactly 2 mappers are registered (ClientMapper and
-        // SupportTicketMapper)
         assertEquals(2, candidates.size(),
                 "Expected 2 mapper beans (ClientMapper, SupportTicketMapper) but found: " + candidates.size());
     }

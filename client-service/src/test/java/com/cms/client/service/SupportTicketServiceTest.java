@@ -3,7 +3,7 @@ package com.cms.client.service;
 import com.cms.client.domain.entity.SupportTicket;
 import com.cms.client.dto.request.TicketRequest;
 import com.cms.client.dto.response.TicketResponse;
-import com.cms.client.mapper.SupportTicketMapper;
+
 import com.cms.client.domain.entity.Client;
 import com.cms.client.domain.entity.UserProjection;
 import com.cms.client.repository.ActivityLogRepository;
@@ -48,7 +48,6 @@ class SupportTicketServiceTest {
 
     private Jwt mockJwt;
     private SupportTicket mockTicket;
-    private TicketResponse mockResponse;
 
     @BeforeEach
     void setUp() {
@@ -72,13 +71,6 @@ class SupportTicketServiceTest {
                 .description("Cannot login")
                 .category("AUTH")
                 .priority("HIGH")
-                .status("OPEN")
-                .build();
-
-        mockResponse = TicketResponse.builder()
-                .ticketId(10L)
-                .clientId(1L)
-                .subject("Test Issue")
                 .status("OPEN")
                 .build();
     }

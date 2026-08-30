@@ -29,7 +29,7 @@ public class ContractController {
     public ResponseEntity<ContractResponse> createContract(@Valid @RequestBody ContractRequest request,
                                                            @AuthenticationPrincipal Jwt jwt) {
         String performedBy = jwt != null ? jwt.getClaimAsString("preferred_username") : "system";
-        if (performedBy == null) {
+        if (performedBy == null && jwt != null) {
             performedBy = jwt.getSubject();
         }
         ContractResponse response = contractService.createContract(request, performedBy);

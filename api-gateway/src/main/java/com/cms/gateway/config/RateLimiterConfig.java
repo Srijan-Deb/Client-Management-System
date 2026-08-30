@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import reactor.core.publisher.Mono;
 
+import java.net.InetSocketAddress;
+
 /**
  * Rate limiter configuration for the CMS API Gateway (Phase 8).
  *
@@ -43,10 +45,7 @@ public class RateLimiterConfig {
                 .map(principal -> "user:" + principal.getName())
                 .switchIfEmpty(
                         Mono.just(
-                                "ip:" + exchange.getRequest()
-                                        .getRemoteAddress()
-                                        .getAddress()
-                                        .getHostAddress()
+                                "ip:" + resolveIp(exchange)
                         )
                 );
     }
@@ -58,7 +57,15 @@ public class RateLimiterConfig {
     @Bean
     public KeyResolver ipKeyResolver() {
         return exchange -> Mono.just(
-                "ip:" + exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()
+                "ip:" + resolveIp(exchange)
         );
+    }
+
+    private String resolveIp(org.springframework.web.server.ServerWebExchange exchange) {
+        InetSocketAddress remoteAddress = exchange.getRequest().getRemoteAddress();
+        if (remoteAddress != null && remoteAddress.getAddress() != null) {
+            return remoteAddress.getAddress().getHostAddress();
+        }
+        return "unknown";
     }
 }

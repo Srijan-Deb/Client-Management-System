@@ -8,6 +8,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
+import org.springframework.lang.NonNull;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -52,7 +54,7 @@ public class CmsJwtAuthenticationConverter
             new JwtGrantedAuthoritiesConverter();
 
     @Override
-    public AbstractAuthenticationToken convert(Jwt jwt) {
+    public AbstractAuthenticationToken convert(@NonNull Jwt jwt) {
         // 1. Collect default scope-based authorities (e.g., SCOPE_openid)
         Collection<GrantedAuthority> authorities = new ArrayList<>(
                 defaultConverter.convert(jwt));

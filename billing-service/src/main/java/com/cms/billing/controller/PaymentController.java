@@ -28,7 +28,7 @@ public class PaymentController {
     public ResponseEntity<PaymentResponse> processPayment(@Valid @RequestBody PaymentRequest request,
                                                           @AuthenticationPrincipal Jwt jwt) {
         String performedBy = jwt != null ? jwt.getClaimAsString("preferred_username") : "system";
-        if (performedBy == null) {
+        if (performedBy == null && jwt != null) {
             performedBy = jwt.getSubject();
         }
         PaymentResponse response = paymentService.processPayment(request, performedBy);

@@ -15,7 +15,6 @@ import com.cms.client.repository.ClientRepository;
 import com.cms.client.repository.UserProjectionRepository;
 import com.cms.common.event.ClientOnboardedEvent;
 import com.cms.common.exception.DuplicateResourceException;
-import com.cms.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

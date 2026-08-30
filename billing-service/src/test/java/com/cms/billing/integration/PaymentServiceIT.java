@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 import com.cms.billing.domain.dto.PaymentRequest;
 import com.cms.billing.domain.dto.PaymentResponse;
 import com.cms.billing.domain.entity.Invoice;
-import com.cms.billing.domain.entity.Payment;
 import com.cms.billing.repository.InvoiceRepository;
 import com.cms.billing.repository.PaymentRepository;
 import com.cms.billing.service.PaymentService;
@@ -32,7 +31,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.junit.jupiter.api.AfterEach;
-import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:testdb;MODE=MYSQL",
@@ -210,5 +208,6 @@ public class PaymentServiceIT {
             "response2 status was: " + response2.getStatus());
         
         verify(stripeService, times(1)).createCharge(anyString(), any(), anyString(), anyString());
+        executorService.shutdown();
     }
 }

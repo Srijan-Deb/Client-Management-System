@@ -94,15 +94,17 @@ class AccountServiceIT {
 
         // HTTP assertions
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().accountId()).isPositive();
-        assertThat(response.getBody().accountName()).isEqualTo("Jane Doe");
-        assertThat(response.getBody().email()).isEqualTo("jane.doe@example.com");
-        assertThat(response.getBody().status()).isEqualTo("ACTIVE");
+        
+        AccountResponse body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body.accountId()).isPositive();
+        assertThat(body.accountName()).isEqualTo("Jane Doe");
+        assertThat(body.email()).isEqualTo("jane.doe@example.com");
+        assertThat(body.status()).isEqualTo("ACTIVE");
         assertThat(response.getHeaders().getLocation())
-                .hasPath("/api/v1/accounts/" + response.getBody().accountId());
+                .hasPath("/api/v1/accounts/" + body.accountId());
 
-        createdAccountId = response.getBody().accountId();
+        createdAccountId = body.accountId();
 
         // DB assertion â€” confirm row exists and client_id column is NOT on accounts
         Integer count = jdbcTemplate.queryForObject(
@@ -137,10 +139,12 @@ class AccountServiceIT {
                 AccountResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().accountId()).isEqualTo(createdAccountId);
-        assertThat(response.getBody().accountName()).isEqualTo("Jane Doe");
-        assertThat(response.getBody().email()).isEqualTo("jane.doe@example.com");
+        
+        AccountResponse body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body.accountId()).isEqualTo(createdAccountId);
+        assertThat(body.accountName()).isEqualTo("Jane Doe");
+        assertThat(body.email()).isEqualTo("jane.doe@example.com");
     }
 
     @Test
@@ -157,7 +161,11 @@ class AccountServiceIT {
                 java.util.Map.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(response.getBody()).containsKey("errorCode");
-        assertThat(response.getBody().get("errorCode")).isEqualTo("ACCOUNT_NOT_FOUND");
+        
+        @SuppressWarnings("unchecked")
+        java.util.Map<String, Object> body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body).containsKey("errorCode");
+        assertThat(body.get("errorCode")).isEqualTo("ACCOUNT_NOT_FOUND");
     }
 }

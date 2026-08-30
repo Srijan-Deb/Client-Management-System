@@ -6,7 +6,6 @@ import com.cms.billing.domain.entity.AuditLog;
 import com.cms.billing.domain.entity.Invoice;
 import com.cms.billing.domain.entity.Payment;
 import com.cms.billing.repository.AuditLogRepository;
-import com.cms.billing.repository.InvoiceRepository;
 import com.cms.billing.repository.PaymentRepository;
 import com.cms.common.event.PaymentFailedEvent;
 import com.cms.common.event.PaymentSuccessEvent;
@@ -27,7 +26,6 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final InvoiceCacheService invoiceCacheService;
-    private final InvoiceRepository invoiceRepository;
     private final AuditLogRepository auditLogRepository;
     private final StripeGateway stripeService;
     private final KafkaTemplate<String, Object> kafkaTemplate;
@@ -35,14 +33,12 @@ public class PaymentService {
 
     public PaymentService(PaymentRepository paymentRepository,
                           InvoiceCacheService invoiceCacheService,
-                          InvoiceRepository invoiceRepository,
                           AuditLogRepository auditLogRepository,
                           StripeGateway stripeService,
                           KafkaTemplate<String, Object> kafkaTemplate,
                           PlatformTransactionManager transactionManager) {
         this.paymentRepository = paymentRepository;
         this.invoiceCacheService = invoiceCacheService;
-        this.invoiceRepository = invoiceRepository;
         this.auditLogRepository = auditLogRepository;
         this.stripeService = stripeService;
         this.kafkaTemplate = kafkaTemplate;

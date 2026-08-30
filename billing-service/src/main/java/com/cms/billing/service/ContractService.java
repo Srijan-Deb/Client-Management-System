@@ -9,16 +9,13 @@ import com.cms.billing.domain.entity.Product;
 import com.cms.billing.domain.entity.Subscription;
 import com.cms.billing.repository.AuditLogRepository;
 import com.cms.billing.repository.ContractRepository;
-import com.cms.billing.repository.InvoiceRepository;
 import com.cms.billing.repository.ProductRepository;
 import com.cms.common.event.InvoiceGeneratedEvent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +25,6 @@ public class ContractService {
 
     private final ProductRepository productRepository;
     private final ContractRepository contractRepository;
-    private final InvoiceRepository invoiceRepository;
     private final AuditLogRepository auditLogRepository;
     private final PdfGeneratorService pdfGeneratorService;
     private final MinioService minioService;
@@ -36,14 +32,12 @@ public class ContractService {
 
     public ContractService(ProductRepository productRepository,
                            ContractRepository contractRepository,
-                           InvoiceRepository invoiceRepository,
                            AuditLogRepository auditLogRepository,
                            PdfGeneratorService pdfGeneratorService,
                            MinioService minioService,
                            KafkaTemplate<String, Object> kafkaTemplate) {
         this.productRepository = productRepository;
         this.contractRepository = contractRepository;
-        this.invoiceRepository = invoiceRepository;
         this.auditLogRepository = auditLogRepository;
         this.pdfGeneratorService = pdfGeneratorService;
         this.minioService = minioService;

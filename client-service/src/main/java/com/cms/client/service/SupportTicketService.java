@@ -8,7 +8,6 @@ import com.cms.client.dto.response.TicketResponse;
 import com.cms.client.repository.ActivityLogRepository;
 import com.cms.client.repository.ClientRepository;
 import com.cms.client.repository.SupportTicketRepository;
-import com.cms.client.repository.TicketCommentRepository;
 import com.cms.client.repository.UserProjectionRepository;
 import com.cms.common.event.TicketCreatedEvent;
 import com.cms.common.exception.ResourceNotFoundException;
@@ -30,7 +29,6 @@ import org.springframework.data.domain.Pageable;
 public class SupportTicketService {
 
     private final SupportTicketRepository ticketRepository;
-    private final TicketCommentRepository commentRepository;
     private final ClientRepository clientRepository;
     private final UserProjectionRepository userProjectionRepository;
     private final ActivityLogRepository activityLogRepository;
