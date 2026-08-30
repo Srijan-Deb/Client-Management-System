@@ -52,6 +52,25 @@
         <!-- Spring Security OAuth2 Resource Server â€” needed for CmsJwtAuthenticationConverter.
              Marked optional so downstream modules that don't need security don't inherit it.
              All 4 service POMs already declare spring-boot-starter-oauth2-resource-server. -->
+        <!-- Added for SecurityConfig & UserSyncFilter -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-oauth2-resource-server</artifactId>

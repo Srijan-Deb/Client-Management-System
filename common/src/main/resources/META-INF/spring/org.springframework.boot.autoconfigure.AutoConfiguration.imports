@@ -1,1 +1,2 @@
 com.cms.common.config.CommonAutoConfiguration
+com.cms.common.config.CommonSecurityAutoConfiguration

@@ -1,7 +1,5 @@
-package com.cms.account.config;
+package com.cms.common.security;
 
-import com.cms.account.filter.UserSyncFilter;
-import com.cms.common.security.CmsJwtAuthenticationConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -30,11 +28,6 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
                         auth.requestMatchers("/actuator/health", "/actuator/info").permitAll()
-                            // Internal service-to-service endpoint â€” no JWT required.
-                            // Called by Client Service during client onboarding.
-                            // Protected by Docker network isolation in Phase 2.
-                            // TODO Phase 8: replace with mTLS or API-key header auth.
-                            .requestMatchers("/api/v1/accounts/link/**").permitAll()
                             .anyRequest().authenticated();
                 })
                 .oauth2ResourceServer(oauth2 -> {
@@ -42,7 +35,6 @@ public class SecurityConfig {
                                 jwt.jwtAuthenticationConverter(new CmsJwtAuthenticationConverter());
                         });
                 })
-                // UserSyncFilter only applies to authenticated (JWT-bearing) requests
                 .addFilterAfter(userSyncFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

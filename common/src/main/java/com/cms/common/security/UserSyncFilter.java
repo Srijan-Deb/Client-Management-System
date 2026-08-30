@@ -1,4 +1,4 @@
-package com.cms.billing.filter;
+package com.cms.common.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -8,18 +8,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
 /**
- * Idempotent user sync filter for billing-service (cms_billing schema).
- * Ensures contracts.created_by FK is satisfiable from Phase 5 onward.
- * See client-service UserSyncFilter for full documentation.
+ * Idempotent user sync filter.
+ *
+ * <p>On every authenticated request, upserts the caller's identity into
+ * the local {@code users} projection table. This ensures FK constraints
+ * are satisfiable.
+ *
+ * <p>Uses {@code INSERT ... ON DUPLICATE KEY UPDATE} on the {@code keycloak_id}
+ * unique key.
  */
 @Slf4j
-@Component
 public class UserSyncFilter extends OncePerRequestFilter {
 
     private static final String UPSERT_SQL = """
@@ -57,10 +60,11 @@ public class UserSyncFilter extends OncePerRequestFilter {
                             keycloakId,
                             email,
                             fullName != null ? fullName : email);
-                    log.debug("UserSync[billing]: upserted user keycloak_id={}", keycloakId);
+                    log.debug("UserSync: upserted user keycloak_id={}", keycloakId);
                 }
             } catch (Exception ex) {
-                log.warn("UserSync[billing] failed for {} â€” continuing: {}",
+                // Never fail the business request due to a sync error
+                log.warn("UserSync failed for request {} - continuing: {}",
                         request.getRequestURI(), ex.getMessage());
             }
         }
@@ -71,6 +75,6 @@ public class UserSyncFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.startsWith("/actuator");
+        return path != null && path.startsWith("/actuator");
     }
 }
