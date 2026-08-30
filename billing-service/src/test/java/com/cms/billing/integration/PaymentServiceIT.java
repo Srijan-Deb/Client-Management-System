@@ -76,7 +76,7 @@ public class PaymentServiceIT {
         testInvoice.setTaxRate(new BigDecimal("18.00"));
         testInvoice.setTaxAmount(new BigDecimal("18.00"));
         testInvoice.setTotalAmount(new BigDecimal("118.00"));
-        testInvoice.setCurrency("USD");
+        testInvoice.setCurrency("INR");
         testInvoice.setDueDate(LocalDate.now().plusDays(30));
         testInvoice.setStatus("PENDING");
         testInvoice = invoiceRepository.save(testInvoice);

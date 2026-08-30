@@ -548,7 +548,7 @@ Expected: `201 Created`. A PDF is generated and stored in MinIO.
 {
   "invoiceId": 1,
   "amount": 1500.00,
-  "currency": "USD",
+  "currency": "INR",
   "paymentMethod": "STRIPE"
 }
 ```

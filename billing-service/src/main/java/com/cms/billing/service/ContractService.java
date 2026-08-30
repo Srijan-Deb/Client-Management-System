@@ -102,7 +102,7 @@ public class ContractService {
         invoice.setTaxRate(taxRate);
         invoice.setTaxAmount(taxAmount);
         invoice.setTotalAmount(totalAmount);
-        invoice.setCurrency("USD");
+        invoice.setCurrency("INR");
         invoice.setDueDate(LocalDate.now().plusDays(30));
         invoice.setStatus("PENDING");
         contract.addInvoice(invoice);

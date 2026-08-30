@@ -75,7 +75,7 @@ export const handlers = [
         taxAmount: 10,
         taxRate: 0.1,
         totalAmount: 110,
-        currency: 'USD',
+        currency: 'INR',
         status: 'UNPAID',
         dueDate: '2026-02-01T00:00:00Z',
       },

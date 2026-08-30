@@ -103,7 +103,7 @@ public class InvoiceGeneratedEvent {
     @Positive
     private BigDecimal totalAmount;
 
-    /** Currency ISO code (e.g. INR, USD). */
+    /** Currency ISO code (e.g. INR). */
     @NotBlank
     private String currency;
 

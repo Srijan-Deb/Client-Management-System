@@ -5,7 +5,7 @@ export interface Product {
   name: string;
   description: string | null;
   price: number; // BigDecimal serialised as number by Jackson
-  currency: string; // "USD"
+  currency: string; // "INR"
   billingCycle: string; // "MONTHLY" | "ANNUAL" | etc.
   category: { id: number; name: string } | null;
   isActive: boolean;
