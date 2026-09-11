@@ -1,0 +1,297 @@
+# ==============================================================
+# CMS - Scalability Proof (Phase 10)
+# ==============================================================
+
+networks:
+  cms-cluster-network:
+    driver: bridge
+
+volumes:
+  mysql-master-data:
+  mysql-replica-1-data:
+  mysql-replica-2-data:
+  redis-master-data:
+  kafka-1-data:
+  kafka-2-data:
+  kafka-3-data:
+  zookeeper-data:
+  minio-data:
+  clickhouse-data:
+
+services:
+  # ────────────────────────────────────────────────────────
+  # Nginx Load Balancer (Entrypoint)
+  # ────────────────────────────────────────────────────────
+  load-balancer:
+    image: haproxy:2.4
+    container_name: cms-haproxy
+    restart: unless-stopped
+    ports:
+      - "8080:8080" # Keycloak proxy
+      - "8081:8081" # Client Service API proxy
+      - "8090:8090" # Gateway proxy
+    volumes:
+      - ./docker/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    networks:
+      - cms-cluster-network
+
+  # ────────────────────────────────────────────────────────
+  # Zookeeper & Kafka (3 Brokers)
+  # ────────────────────────────────────────────────────────
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
+    container_name: cms-zk-cluster
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - cms-cluster-network
+
+  kafka-1:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: cms-kafka-1
+    depends_on: [zookeeper]
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://cms-kafka-1:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+    networks:
+      - cms-cluster-network
+
+  kafka-2:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: cms-kafka-2
+    depends_on: [zookeeper]
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://cms-kafka-2:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+    networks:
+      - cms-cluster-network
+
+  kafka-3:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: cms-kafka-3
+    depends_on: [zookeeper]
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://cms-kafka-3:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+    networks:
+      - cms-cluster-network
+
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: cms-kafka-init-cluster
+    depends_on: [kafka-1, kafka-2, kafka-3]
+    entrypoint: ["/bin/bash", "/scripts/kafka-init.sh"]
+    environment:
+      KAFKA_BOOTSTRAP: "cms-kafka-1:9092,cms-kafka-2:9092,cms-kafka-3:9092"
+      KAFKA_REPLICATION_FACTOR: 3
+      KAFKA_PARTITIONS: 3
+    volumes:
+      - ./docker/kafka-init.sh:/scripts/kafka-init.sh:ro
+    networks:
+      - cms-cluster-network
+
+  # ────────────────────────────────────────────────────────
+  # Redis Sentinel (1 Master, 1 Replica, 3 Sentinels)
+  # ────────────────────────────────────────────────────────
+  redis-master:
+    image: bitnami/redis:7.2
+    container_name: cms-redis-master
+    environment:
+      REDIS_REPLICATION_MODE: master
+      ALLOW_EMPTY_PASSWORD: "yes"
+    networks:
+      - cms-cluster-network
+
+  redis-replica:
+    image: bitnami/redis:7.2
+    container_name: cms-redis-replica
+    depends_on: [redis-master]
+    environment:
+      REDIS_REPLICATION_MODE: slave
+      REDIS_MASTER_HOST: redis-master
+      ALLOW_EMPTY_PASSWORD: "yes"
+    networks:
+      - cms-cluster-network
+
+  redis-sentinel-1:
+    image: bitnami/redis-sentinel:7.2
+    container_name: cms-redis-sentinel-1
+    depends_on: [redis-master, redis-replica]
+    environment:
+      REDIS_MASTER_HOST: redis-master
+      REDIS_MASTER_SET: mymaster
+    networks:
+      - cms-cluster-network
+
+  redis-sentinel-2:
+    image: bitnami/redis-sentinel:7.2
+    container_name: cms-redis-sentinel-2
+    depends_on: [redis-master, redis-replica]
+    environment:
+      REDIS_MASTER_HOST: redis-master
+      REDIS_MASTER_SET: mymaster
+    networks:
+      - cms-cluster-network
+
+  redis-sentinel-3:
+    image: bitnami/redis-sentinel:7.2
+    container_name: cms-redis-sentinel-3
+    depends_on: [redis-master, redis-replica]
+    environment:
+      REDIS_MASTER_HOST: redis-master
+      REDIS_MASTER_SET: mymaster
+    networks:
+      - cms-cluster-network
+
+  # ────────────────────────────────────────────────────────
+  # MySQL Replication (1 Primary, 2 Replicas)
+  # ────────────────────────────────────────────────────────
+  mysql-primary:
+    image: bitnami/mysql:8.0
+    container_name: cms-mysql-primary
+    environment:
+      MYSQL_REPLICATION_MODE: master
+      MYSQL_REPLICATION_USER: repl_user
+      MYSQL_REPLICATION_PASSWORD: repl_password
+      MYSQL_ROOT_PASSWORD: cms_root_pass
+      MYSQL_USER: cms_user
+      MYSQL_PASSWORD: cms_pass
+    volumes:
+      - mysql-master-data:/bitnami/mysql/data
+      - ./docker/mysql-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks:
+      - cms-cluster-network
+
+  mysql-replica-1:
+    image: bitnami/mysql:8.0
+    container_name: cms-mysql-replica-1
+    depends_on: [mysql-primary]
+    environment:
+      MYSQL_REPLICATION_MODE: slave
+      MYSQL_REPLICATION_USER: repl_user
+      MYSQL_REPLICATION_PASSWORD: repl_password
+      MYSQL_MASTER_HOST: mysql-primary
+      MYSQL_MASTER_PORT_NUMBER: 3306
+      MYSQL_MASTER_ROOT_PASSWORD: cms_root_pass
+    networks:
+      - cms-cluster-network
+
+  mysql-replica-2:
+    image: bitnami/mysql:8.0
+    container_name: cms-mysql-replica-2
+    depends_on: [mysql-primary]
+    environment:
+      MYSQL_REPLICATION_MODE: slave
+      MYSQL_REPLICATION_USER: repl_user
+      MYSQL_REPLICATION_PASSWORD: repl_password
+      MYSQL_MASTER_HOST: mysql-primary
+      MYSQL_MASTER_PORT_NUMBER: 3306
+      MYSQL_MASTER_ROOT_PASSWORD: cms_root_pass
+    networks:
+      - cms-cluster-network
+
+  # ────────────────────────────────────────────────────────
+  # Supporting Services
+  # ────────────────────────────────────────────────────────
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.5
+    container_name: cms-keycloak-cluster
+    depends_on: [mysql-primary]
+    command: start-dev
+    environment:
+      KC_DB: mysql
+      KC_DB_URL: jdbc:mysql://mysql-primary:3306/keycloak_db?useSSL=false&allowPublicKeyRetrieval=true
+      KC_DB_USERNAME: cms_user
+      KC_DB_PASSWORD: cms_pass
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    networks:
+      - cms-cluster-network
+
+  minio:
+    image: minio/minio:latest
+    container_name: cms-minio-cluster
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password123
+    networks:
+      - cms-cluster-network
+
+  mailhog:
+    image: axllent/mailpit:latest
+    container_name: cms-mailhog-cluster
+    networks:
+      - cms-cluster-network
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.3
+    container_name: cms-clickhouse-cluster
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+    networks:
+      - cms-cluster-network
+
+  # ────────────────────────────────────────────────────────
+  # Microservices (Scaled)
+  # ────────────────────────────────────────────────────────
+  client-service-1:
+    build: ./client-service
+    container_name: cms-client-service-1
+    environment:
+      SPRING_PROFILES_ACTIVE: cluster,docker
+    depends_on: [mysql-primary, kafka-1, redis-master]
+    networks:
+      - cms-cluster-network
+
+  client-service-2:
+    build: ./client-service
+    container_name: cms-client-service-2
+    environment:
+      SPRING_PROFILES_ACTIVE: cluster,docker
+    depends_on: [mysql-primary, kafka-1, redis-master]
+    networks:
+      - cms-cluster-network
+
+  notification-service-1:
+    build: ./notification-service
+    container_name: cms-notification-service-1
+    environment:
+      SPRING_PROFILES_ACTIVE: cluster,docker
+    depends_on: [mysql-primary, kafka-1, mailhog]
+    networks:
+      - cms-cluster-network
+
+  notification-service-2:
+    build: ./notification-service
+    container_name: cms-notification-service-2
+    environment:
+      SPRING_PROFILES_ACTIVE: cluster,docker
+    depends_on: [mysql-primary, kafka-1, mailhog]
+    networks:
+      - cms-cluster-network
+
+  account-service:
+    build: ./account-service
+    container_name: cms-account-service-cluster
+    environment:
+      SPRING_PROFILES_ACTIVE: cluster,docker
+    depends_on: [mysql-primary, kafka-1, redis-master]
+    networks:
+      - cms-cluster-network
+
+  billing-service:
+    build: ./billing-service
+    container_name: cms-billing-service-cluster
+    environment:
+      SPRING_PROFILES_ACTIVE: cluster,docker
+    depends_on: [mysql-primary, kafka-1, minio]
+    networks:
+      - cms-cluster-network

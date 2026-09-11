@@ -6,8 +6,12 @@ spring:
       host: localhost
   kafka:
     bootstrap-servers: localhost:9092
+  mail:
+    host: localhost
+    port: 1025
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8080/realms/cms
+

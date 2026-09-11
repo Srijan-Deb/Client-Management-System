@@ -17,12 +17,23 @@ vi.mock('../lib/keycloak', () => ({
   },
 }));
 
+vi.mock('../auth/RoleGate', () => ({
+  useHasRole: () => true,
+}));
+
 vi.mock('../hooks/useClients', () => ({
   useClient: vi.fn(),
+  useDeleteContact: vi.fn().mockReturnValue({ mutate: vi.fn(), isPending: false }),
+  useDeleteAddress: vi.fn().mockReturnValue({ mutate: vi.fn(), isPending: false }),
 }));
 
 vi.mock('../hooks/useBilling', () => ({
-  useInvoices: vi.fn(),
+  useInvoices: vi.fn().mockReturnValue({ data: [] }),
+  useContracts: vi.fn().mockReturnValue({ data: [] }),
+}));
+
+vi.mock('../hooks/useTickets', () => ({
+  useTickets: vi.fn().mockReturnValue({ data: { content: [] } }),
 }));
 
 vi.mock('../api/axios', () => ({

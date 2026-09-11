@@ -3,6 +3,7 @@ import type {
   Product,
   ContractRequest,
   ContractResponse,
+  ContractSummary,
   SubscriptionRequest,
   Invoice,
   PaymentRequest,
@@ -19,6 +20,9 @@ export const billingApi = {
   // ─── Contracts ───────────────────────────────────────────────────────────
   createContract: (body: ContractRequest): Promise<ContractResponse> =>
     api.post(`${BASE}/contracts`, body).then((r) => r.data),
+
+  listContracts: (clientId?: number): Promise<ContractSummary[]> =>
+    api.get(`${BASE}/contracts`, { params: clientId ? { clientId } : undefined }).then((r) => r.data),
 
   // ─── Subscriptions ───────────────────────────────────────────────────────
   createSubscription: (body: SubscriptionRequest) =>

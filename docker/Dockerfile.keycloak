@@ -1,0 +1,14 @@
+FROM quay.io/keycloak/keycloak:24.0.5
+
+# Bake DB vendor, local cache mode, and health endpoints into the image
+# at build time (Quarkus augmentation). This means start --optimized at
+# runtime skips ALL augmentation and starts Keycloak in ~30s.
+#
+# KC_CACHE=local  → single-node in-memory cache (no JGroups/multicast needed)
+#                   fixes "Failed to start caches" in production mode on Docker
+# KC_DB=mysql     → bake MySQL JDBC driver into the optimized image
+ENV KC_DB=mysql
+ENV KC_HEALTH_ENABLED=true
+ENV KC_CACHE=local
+
+RUN /opt/keycloak/bin/kc.sh build --cache=local

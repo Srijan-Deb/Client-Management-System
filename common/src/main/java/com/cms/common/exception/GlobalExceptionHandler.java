@@ -34,6 +34,19 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles Spring Security access denied exceptions - returns 403 Forbidden.
+     */
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccessDenied(org.springframework.security.access.AccessDeniedException ex) {
+        log.warn("Access denied: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                "errorCode", "ACCESS_DENIED",
+                "message",   ex.getMessage() != null ? ex.getMessage() : "Access denied",
+                "timestamp", Instant.now().toString()
+        ));
+    }
+
+    /**
      * Handles {@code @Valid} / {@code @Validated} bean validation failures.
      * Returns 400 with per-field error messages.
      */

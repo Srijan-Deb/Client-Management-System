@@ -7,6 +7,7 @@ import { useClients, useCreateClient, useUpdateClient } from '../hooks/useClient
 import { useHasRole } from '../auth/RoleGate';
 import { TableSkeleton } from '../components/TableSkeleton';
 import { EmptyState } from '../components/EmptyState';
+import { PhoneInputWithCountry } from '../components/PhoneInputWithCountry';
 import type { ClientSummary, ClientTier, ClientStatus } from '../types/client';
 
 // ─── Zod schemas matching backend validation ───────────────────────────────
@@ -15,7 +16,7 @@ const createSchema = z.object({
   firstName: z.string().min(1, 'First name is required').max(100),
   lastName: z.string().min(1, 'Last name is required').max(100),
   email: z.string().email('Must be a valid email').max(255),
-  phone: z.string().regex(/^[+]?[\d\s\-().]{7,20}$/, 'Invalid phone format').optional().or(z.literal('')),
+  phone: z.string().max(20, 'Phone must not exceed 20 characters').optional().or(z.literal('')),
   companyName: z.string().max(255).optional().or(z.literal('')),
   tier: z.enum(['STANDARD', 'PREMIUM', 'ENTERPRISE']),
 });
@@ -55,7 +56,7 @@ const ClientModal = ({ client, onClose }: ClientModalProps) => {
   const updateMutation = useUpdateClient(client?.clientId ?? 0);
   const mutation = isEdit ? updateMutation : createMutation;
 
-  const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<CreateFormData | UpdateFormData>({
+  const { register, handleSubmit, setValue, watch, clearErrors, setError, formState: { errors, isSubmitting } } = useForm<CreateFormData | UpdateFormData>({
     resolver: zodResolver(isEdit ? updateSchema : createSchema),
     defaultValues: isEdit ? {
       firstName: client.firstName,
@@ -64,7 +65,7 @@ const ClientModal = ({ client, onClose }: ClientModalProps) => {
       phone: client.phone ?? '',
       companyName: client.companyName ?? '',
       tier: client.tier,
-    } : { tier: 'STANDARD' },
+    } : { tier: 'STANDARD', phone: '' },
   });
 
   const onSubmit = async (data: any) => {
@@ -112,20 +113,28 @@ const ClientModal = ({ client, onClose }: ClientModalProps) => {
             {errors.email && <p className="form-error">{errors.email.message}</p>}
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label">Phone</label>
-              <input className="form-input" placeholder="+91 9876543210" {...register('phone')} />
-              {errors.phone && <p className="form-error">{errors.phone.message as string}</p>}
-            </div>
-            <div className="form-group">
-              <label className="form-label">Tier *</label>
-              <select className="form-input" {...register('tier')}>
-                {['STANDARD', 'PREMIUM', 'ENTERPRISE'].map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </div>
+          {/* Country-validated Phone Input */}
+          <PhoneInputWithCountry
+            label="Phone Number"
+            value={watch('phone') || ''}
+            onChange={(formatted, isValid) => {
+              setValue('phone', formatted);
+              if (!isValid && formatted) {
+                setError('phone', { type: 'manual', message: 'Invalid phone number format for selected country' });
+              } else {
+                clearErrors('phone');
+              }
+            }}
+            error={errors.phone?.message as string}
+          />
+
+          <div className="form-group">
+            <label className="form-label">Tier *</label>
+            <select className="form-input" {...register('tier')}>
+              {['STANDARD', 'PREMIUM', 'ENTERPRISE'].map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
           </div>
 
           <div className="form-group">

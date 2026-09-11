@@ -8,6 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "subscriptions")
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Subscription implements java.io.Serializable {
 
     @Id
@@ -21,6 +22,7 @@ public class Subscription implements java.io.Serializable {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "subscriptions", "invoices"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contract_id")
     private Contract contract;

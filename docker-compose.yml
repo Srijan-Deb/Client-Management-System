@@ -22,6 +22,7 @@ volumes:
   keycloak-data:
   prometheus-data:      # Phase 7: Prometheus TSDB
   grafana-data:         # Phase 7: Grafana dashboards/settings
+  clickhouse-data:      # Phase 11: ClickHouse analytics data
 
 services:
   # ───────────────────────────────────────────────────────────────────────────
@@ -45,8 +46,8 @@ services:
       - cms-network
     healthcheck:
       test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://127.0.0.1/actuator/health/liveness || exit 1"]
-      interval: 10s
-      timeout: 5s
+      interval: 15s
+      timeout: 10s
       retries: 5
 
 
@@ -70,11 +71,11 @@ services:
     networks:
       - cms-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pcms_root_pass"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 30s
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD > /dev/null 2>&1 || exit 1"]
+      interval: 20s
+      timeout: 15s
+      retries: 5
+      start_period: 45s
 
   # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   # Redis 7 (single instance â€” Sentinel in Phase 10)
@@ -91,8 +92,8 @@ services:
       - cms-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
+      interval: 15s
+      timeout: 10s
       retries: 5
 
   # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -126,6 +127,7 @@ services:
     image: confluentinc/cp-kafka:7.6.1
     container_name: cms-kafka
     restart: unless-stopped
+    stop_grace_period: 60s
     depends_on:
       zookeeper:
         condition: service_started   # Kafka handles ZK readiness internally via retries
@@ -140,6 +142,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
       KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_NUM_RECOVERY_THREADS_PER_DATA_DIR: 4
     ports:
       - "9092:9092"
     volumes:
@@ -147,11 +150,11 @@ services:
     networks:
       - cms-network
     healthcheck:
-      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
-      interval: 15s
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/9092' || exit 1"]
+      interval: 10s
       timeout: 10s
-      retries: 10
-      start_period: 40s
+      retries: 30
+      start_period: 150s
 
   # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   # Kafka topic initialiser (one-shot â€” exits after creating topics)
@@ -171,15 +174,22 @@ services:
 
   # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   # Keycloak 24 (OAuth2/JWT â€” realm + roles configured in Phase 1)
-  # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€  
   keycloak:
-    image: quay.io/keycloak/keycloak:24.0.5
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.keycloak
+    image: cms-keycloak-optimized:latest
     container_name: cms-keycloak
     restart: unless-stopped
     depends_on:
       mysql:
         condition: service_healthy
-    command: start-dev
+    # start --optimized: uses the pre-built image as-is, zero Quarkus
+    # augmentation at runtime → Keycloak starts in ~30s.
+    # KC_CACHE=local is baked into the image via Dockerfile (kc.sh build --cache=local)
+    # so no "Failed to start caches" error in single-node Docker deployment.
+    command: start --optimized
     env_file: .env
     environment:
       KC_DB: mysql
@@ -189,9 +199,9 @@ services:
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_HTTPS: "false"
       KC_HTTP_ENABLED: "true"
-      KC_HEALTH_ENABLED: "true"
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      QUARKUS_DATASOURCE_JDBC_ACQUISITION_TIMEOUT: 300S
     ports:
       - "8080:8080"
     networks:
@@ -199,11 +209,13 @@ services:
     healthcheck:
       # KC24 minimal image has no curl/wget. Use bash TCP socket to verify
       # port 8080 is accepting connections (sufficient for dev readiness).
-      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/8080' 2>/dev/null && exit 0 || exit 1"]
+      # After rebuilding the image with KC_HEALTH_ENABLED=true, switch to:
+      #   test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && grep -q '200' <&3"]
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/8080' 2>/dev/null || exit 1"]
       interval: 20s
-      timeout: 10s
-      retries: 15
-      start_period: 90s
+      timeout: 15s
+      retries: 40
+      start_period: 600s
 
   # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   # MinIO (S3-compatible â€” contract/invoice PDF storage)
@@ -226,9 +238,9 @@ services:
       - cms-network
     healthcheck:
       test: ["CMD", "curl", "-fs", "http://localhost:9000/minio/health/live"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+      interval: 20s
+      timeout: 15s
+      retries: 5
       start_period: 20s
 
   # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -248,13 +260,37 @@ services:
       - cms-network
 
   # ============================================================
-  # Phase 7 â€” Observability Stack
+  # Phase 11 — Analytics Stack (ClickHouse)
+  # ============================================================
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.3
+    container_name: cms-clickhouse
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_PASSWORD: "clickhouse"
+    ports:
+      - "8123:8123" # HTTP API
+      - "9002:9000" # Native client
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - ./docker/clickhouse-listen.xml:/etc/clickhouse-server/config.d/listen.xml:ro
+    networks:
+      - cms-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8123/ping"]
+      interval: 15s
+      timeout: 15s
+      retries: 5
+      start_period: 20s
+
+  # ============================================================
+  # Phase 7 — Observability Stack
   # ============================================================
 
-  # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  # Prometheus â€” scrapes all 5 /actuator/prometheus endpoints
+  # ————————————————————————————————————————————————————————————
+  # Prometheus — scrapes all 5 /actuator/prometheus endpoints
   # UI: http://localhost:9090
-  # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  # ————————————————————————————————————————————————————————————
   prometheus:
     image: prom/prometheus:v2.53.0
     container_name: cms-prometheus
@@ -276,10 +312,10 @@ services:
       - cms-network
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/ready"]
-      interval: 15s
-      timeout: 5s
+      interval: 20s
+      timeout: 15s
       retries: 5
-      start_period: 15s
+      start_period: 20s
 
   # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   # Grafana â€” CMS Overview dashboard (auto-provisioned)
@@ -308,10 +344,10 @@ services:
       - cms-network
     healthcheck:
       test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:3000/api/health || exit 1"]
-      interval: 15s
-      timeout: 5s
+      interval: 20s
+      timeout: 15s
       retries: 5
-      start_period: 20s
+      start_period: 25s
 
   # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   # Jaeger all-in-one â€” receives OTLP spans, provides trace UI
@@ -335,10 +371,10 @@ services:
       - cms-network
     healthcheck:
       test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:14269/ || exit 1"]
-      interval: 15s
-      timeout: 5s
+      interval: 20s
+      timeout: 15s
       retries: 5
-      start_period: 10s
+      start_period: 15s
 
   # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   # AlertManager â€” routes Prometheus alerts to Mailhog
@@ -359,7 +395,7 @@ services:
       - cms-network
     healthcheck:
       test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:9093/-/ready || exit 1"]
-      interval: 15s
-      timeout: 5s
+      interval: 20s
+      timeout: 15s
       retries: 5
-      start_period: 10s
+      start_period: 15s

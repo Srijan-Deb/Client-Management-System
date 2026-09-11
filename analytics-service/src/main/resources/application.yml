@@ -1,0 +1,61 @@
+server:
+  port: 8085
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: analytics-service
+
+  datasource:
+    url: ${CLICKHOUSE_URL:jdbc:ch://cms-clickhouse:8123/default?user=default&password=clickhouse}
+    driver-class-name: com.clickhouse.jdbc.ClickHouseDriver
+    username: default
+    password: "clickhouse"
+    hikari:
+      initializationFailTimeout: -1
+      connection-timeout: 60000
+      validation-timeout: 10000
+      pool-name: analytics-clickhouse-pool
+      maximum-pool-size: 5
+      minimum-idle: 1
+
+  kafka:
+    bootstrap-servers: cms-kafka:9092
+    consumer:
+      group-id: analytics-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.json.trusted.packages: com.cms.common.event
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://cms-keycloak:8080/realms/cms
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+otel:
+  exporter:
+    otlp:
+      endpoint: http://cms-jaeger:4317
+      protocol: grpc
+  resource:
+    attributes:
+      service.name: ${spring.application.name}

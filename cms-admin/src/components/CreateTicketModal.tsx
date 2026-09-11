@@ -24,10 +24,12 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ clientId, account
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('MEDIUM');
   const [category, setCategory] = useState(CATEGORIES[1]); // Default to Technical
+  const [errorMsg, setErrorMsg] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!subject.trim() || !description.trim()) return;
+    setErrorMsg('');
 
     try {
       await mutation.mutateAsync({
@@ -39,8 +41,10 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ clientId, account
         category,
       });
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to create ticket', err);
+      const msg = err?.response?.data?.message || err?.response?.data?.errors?.[0]?.defaultMessage || 'Failed to create ticket.';
+      setErrorMsg(msg);
     }
   };
 
@@ -51,6 +55,12 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ clientId, account
           <h2 className="modal-title">Create Support Ticket</h2>
           <button className="modal-close" type="button" onClick={onClose} aria-label="Close modal">✕</button>
         </div>
+
+        {errorMsg && (
+          <div style={{ background: 'var(--status-suspended-bg)', color: 'var(--status-suspended)', padding: '12px', borderRadius: '6px', margin: '0 24px 16px', fontSize: '13px' }}>
+            {errorMsg}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="form-group">

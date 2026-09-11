@@ -1,211 +1,250 @@
-# CMS - Client Management System
+# CMS — Enterprise Client Management System
 
-[![CI](https://github.com/srijan-deb/Client-Management-System/actions/workflows/ci.yml/badge.svg)](https://github.com/srijan-deb/Client-Management-System/actions/workflows/ci.yml)
+[![CI Pipeline](https://github.com/Srijan-Deb/Client-Management-System/actions/workflows/ci.yml/badge.svg)](https://github.com/Srijan-Deb/Client-Management-System/actions/workflows/ci.yml)
+[![CodeQL Analysis](https://github.com/Srijan-Deb/Client-Management-System/actions/workflows/codeql.yml/badge.svg)](https://github.com/Srijan-Deb/Client-Management-System/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://openjdk.org/projects/jdk/21/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.2-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![React](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue.svg)](https://www.typescriptlang.org/)
+[![Kafka](https://img.shields.io/badge/Apache%20Kafka-3.7-black.svg)](https://kafka.apache.org/)
+[![ClickHouse](https://img.shields.io/badge/ClickHouse-OLAP-yellow.svg)](https://clickhouse.com/)
 
-> A production-grade, event-driven microservices system built with **Java 21 + Spring Boot 3**,
-> **Apache Kafka**, **MySQL 8**, **Redis**, **Keycloak**, and **MinIO** - running entirely on
-> free/OSS tooling.
+An enterprise-grade, distributed, event-driven B2B Client Management & Billing microservices platform built with **Java 21**, **Spring Boot 3.3**, **Apache Kafka**, **ClickHouse**, **MySQL 8**, **Redis**, **Keycloak 24**, and a modern **React 19 + TypeScript** administration web application.
 
 ---
 
-## Architecture Overview
+## 🏛️ System Architecture
+
+![CMS Architecture Diagram](cms-architecture-diagram.png)
+
+### High-Level Topology
 
 ```
-+--------------------------------------------------+
-|                  CLIENT TIER                     |
-|    Postman / React (later) / Partner API         |
-+--------------------------------------------------+
-                      | HTTPS
-+--------------------------------------------------+
-|                   EDGE TIER                      |
-|    API Gateway (Spring Cloud Gateway :8090)      |
-|              Keycloak (OAuth2 / JWT)             |
-+--------------------------------------------------+
-        |              |              |
-        v              v              v
-+----------+    +-----------+    +----------+
-|  Client  |    |  Account  |    | Billing  |
-| Service  |    |  Service  |    | Service  |
-|  :8081   |    |   :8082   |    |  :8083   |
-+----------+    +-----------+    +----------+
-        |              |              |
-        +------+--------+------+------+
-               |               |
-               v               v
-        [Apache Kafka]    [MySQL 8 / Redis]
-               |
-               v
-    +---------------------+
-    | Notification Service|
-    |       :8084         |
-    +---------------------+
-               |
-               v
-         [Email / SMS]
++-----------------------------------------------------------------------------------+
+|                                 CLIENT & WEB TIER                                 |
+|          cms-admin (React 19 + Vite + TypeScript)  |  Postman API Clients         |
++-----------------------------------------------------------------------------------+
+                                         │  HTTPS / REST
+                                         ▼
++-----------------------------------------------------------------------------------+
+|                                     EDGE TIER                                     |
+|               API Gateway (Spring Cloud Gateway :8090, Reactive WebFlux)          |
+|                   Keycloak 24 (OAuth2 / OIDC, RS256 JWT, RBAC)                    |
++-----------------------------------------------------------------------------------+
+         │                        │                     │                    │
+         ▼                        ▼                     ▼                    ▼
++-----------------+      +-----------------+   +-----------------+  +-----------------+
+|  Client Service |      | Account Service |   | Billing Service |  |Analytics Service|
+|      :8081      |      |      :8082      |   |      :8083      |  |      :8085      |
++-----------------+      +-----------------+   +-----------------+  +-----------------+
+         │                        │                     │                    │
+         └────────────────────────┼─────────────────────┴────────────────────┤
+                                  │                                          │
+                                  ▼                                          ▼
+                      +───────────────────────+                  +───────────────────────+
+                      |     Apache Kafka      |                  |  ClickHouse Columnar  |
+                      |  (Event-Driven Bus)   |                  |    (OLAP Analytics)   |
+                      +───────────────────────+                  +───────────────────────+
+                                  │
+                                  ▼
+                      +───────────────────────+
+                      |  Notification Service |
+                      |         :8084         |
+                      +───────────────────────+
+                                  │
+                                  ▼
+                      [ Email / SMTP Dispatch ]
 ```
 
 ---
 
-## Services
+## 🚀 Microservices Overview
 
-| Service | Port | Responsibility |
-|---|---|---|
-| `api-gateway` | 8090 | JWT validation, rate limiting (20 req/s per user), routing |
-| `client-service` | 8081 | Client onboarding, contacts, addresses, support tickets |
-| `account-service` | 8082 | Account linking, multi-tenant B2B accounts |
-| `billing-service` | 8083 | Contracts, invoices, payments, MinIO document storage |
-| `notification-service` | 8084 | Kafka consumer, email/SMS dispatch |
-
----
-
-## Tech Stack
-
-- **Language:** Java 21 (virtual threads ready)
-- **Framework:** Spring Boot 3.3.2, Spring Cloud 2023.0.3
-- **API Gateway:** Spring Cloud Gateway (WebFlux, reactive)
-- **Auth:** Keycloak 24.0.5 (OAuth2/OIDC, JWT RS256)
-- **Messaging:** Apache Kafka 3.7 (with distributed trace propagation)
-- **Database:** MySQL 8.0 per service (Flyway migrations)
-- **Cache:** Redis (Spring Cache + Gateway rate limiter)
-- **Storage:** MinIO (S3-compatible, for billing documents)
-- **Observability:** Micrometer + OpenTelemetry -> Jaeger, Prometheus + Grafana
-- **Testing:** JUnit 5, Testcontainers (real MySQL + Kafka in CI), WireMock
-- **CI/CD:** GitHub Actions, SonarQube, GHCR (Phase 9)
+| Service | Port | Primary Responsibilities | Key Technologies |
+|---|---|---|---|
+| **`api-gateway`** | `8090` | Unified API entry point, JWT validation, Redis rate-limiting (20 req/s), dynamic route forwarding, CORS configuration | Spring Cloud Gateway, WebFlux, Redis |
+| **`client-service`** | `8081` | Client onboarding, multi-address and multi-contact registry, support ticketing engine, internal client lookups | Spring Data JPA, MySQL, Kafka Producer, Resilience4j |
+| **`account-service`** | `8082` | Multi-tenant account management, organization hierarchy, account-to-client linking | Spring Data JPA, MySQL, Redis Cache |
+| **`billing-service`** | `8083` | Contracts, subscription lifecycle, automated invoice PDF generation, Stripe payment integration, MinIO document storage | Spring Data JPA, Stripe SDK, MinIO S3, iText PDF |
+| **`notification-service`**| `8084` | Asynchronous Kafka event consumer, HTML templated emails (onboarding, invoice, payments, tickets), dead-letter topic (DLT) | Spring Kafka, Thymeleaf, JavaMailSender |
+| **`analytics-service`** | `8085` | High-throughput Kafka stream consumer, ClickHouse event ingestion, real-time analytics aggregation | Spring Boot, ClickHouse JDBC, Kafka |
+| **`cms-admin`** | `5173` | Responsive web portal for staff and clients, analytics dashboards, client management, invoice & payment management | React 19, TypeScript, Vite, Tailwind CSS, TanStack Query |
 
 ---
 
-## Getting Started
+## 🛠️ Technology Stack
+
+- **Core Backend:** Java 21 (Virtual Threads enabled), Spring Boot 3.3.2, Spring Cloud 2023.0.3
+- **Security & IAM:** Keycloak 24.0.5 (OpenID Connect, OAuth2, RS256 JWT, Role-Based Access Control)
+- **Frontend App:** React 19, TypeScript, Vite, Tailwind CSS, TanStack Query, Lucide Icons, Keycloak-JS
+- **Event Streaming:** Apache Kafka 3.7 (trace propagation with W3C baggage)
+- **Databases & Storage:**
+  - **MySQL 8.0**: Dedicated schema per microservice with Flyway database migrations
+  - **ClickHouse**: Fast columnar analytical database for event aggregation and metrics
+  - **Redis 7.0**: Distributed cache and API Gateway sliding-window rate limiting
+  - **MinIO**: S3-compatible object storage for contract and invoice PDF storage
+- **Observability & Monitoring:**
+  - OpenTelemetry + Micrometer distributed tracing -> **Jaeger** (`:16686`)
+  - Prometheus metric collection (`:9090`) + **Grafana** dashboards (`:3000`)
+  - **Alertmanager** (`:9093`) for alert dispatch
+- **Containerization & Deployment:** Docker Compose, Docker Compose Cluster (HAProxy), Kubernetes (k3d), Helm Charts
+
+---
+
+## 🔐 Security & Role-Based Access Control (RBAC)
+
+The system enforces end-to-end stateless security via Keycloak JWT tokens:
+
+| Role | Permissions & Access Scope |
+|---|---|
+| **`ADMIN`** | Full access to all services, user administration, tenant configuration, and billing |
+| **`ACCOUNT_MANAGER`** | Manage clients, accounts, contracts, subscriptions, and issue invoices |
+| **`SUPPORT_AGENT`** | View client profiles, manage support tickets, update ticket statuses |
+| **`BILLING`** | Manage invoices, process payment transactions, view billing analytics |
+| **`CLIENT`** | Client self-service portal: view own company details and manage their own support tickets |
+
+---
+
+## ⚡ Quick Start Guide
 
 ### Prerequisites
 
-- Java 21+
-- Maven 3.9+
-- Docker Desktop (for Testcontainers in integration tests)
-- All infrastructure services started via `docker-compose.yml`
+- **Java 21 JDK**
+- **Maven 3.9+**
+- **Node.js 20+** and **npm**
+- **Docker & Docker Compose** (minimum 8 GB RAM allocated)
 
-### Quick Start (Local Dev)
+---
+
+### Step 1: Clone Repository & Setup Environment
 
 ```bash
-# 1. Start infrastructure (MySQL, Kafka, Redis, Keycloak, MinIO, Jaeger, Prometheus)
+git clone https://github.com/Srijan-Deb/Client-Management-System.git
+cd "Client Management System"
+
+# Copy environment variables template
+cp .env.example .env
+```
+
+---
+
+### Step 2: Start Infrastructure with Docker
+
+Launch MySQL, Kafka, Redis, Keycloak, MinIO, ClickHouse, Prometheus, and Grafana:
+
+```bash
 docker compose up -d
+```
 
-# 2. Copy .env and fill in secrets
-cp .env.example .env    # (or use the provided .env with dev defaults)
+Verify all containers are healthy:
+```bash
+docker compose ps
+```
 
-# 3. Build everything (skip tests for speed)
+---
+
+### Step 3: Build & Launch Microservices
+
+#### Option A: One-Click Startup (PowerShell)
+```powershell
+# Automatically builds and starts all microservices in separate windows
+.\start_all.ps1
+```
+
+To stop all services later:
+```powershell
+.\stop_all.ps1
+```
+
+#### Option B: Manual Startup (Terminal per service)
+```bash
+# Root build
 mvn clean package -DskipTests
 
-# 4. Start each service in its own terminal
-cd api-gateway          && mvn spring-boot:run
-cd client-service       && mvn spring-boot:run
-cd account-service      && mvn spring-boot:run
-cd billing-service      && mvn spring-boot:run
+# Start each service
+cd api-gateway && mvn spring-boot:run
+cd client-service && mvn spring-boot:run
+cd account-service && mvn spring-boot:run
+cd billing-service && mvn spring-boot:run
 cd notification-service && mvn spring-boot:run
+cd analytics-service && mvn spring-boot:run
 ```
 
-### Run Tests (Testcontainers - requires Docker)
+---
+
+### Step 4: Launch Web Administration Frontend (`cms-admin`)
 
 ```bash
-# Unit + Integration tests (Testcontainers spins up MySQL + Kafka automatically)
+cd cms-admin
+npm install
+npm run dev
+```
+
+The admin web portal will be accessible at: **`http://localhost:5173`**
+
+---
+
+## 🌐 Default Service Endpoints & Credentials
+
+| Service / Tool | URL | Default Credentials | Description |
+|---|---|---|---|
+| **Admin Web UI** | `http://localhost:5173` | Keycloak user login | Staff & Client Portal |
+| **API Gateway** | `http://localhost:8090` | Bearer JWT Header | Core API Gateway |
+| **Keycloak IAM** | `http://localhost:8080` | `admin` / `admin` | Identity & Access Management |
+| **Grafana** | `http://localhost:3000` | `admin` / `admin` | Real-time Metrics & Dashboards |
+| **Jaeger Tracing** | `http://localhost:16686` | *(No auth)* | Distributed Tracing UI |
+| **Prometheus** | `http://localhost:9090` | *(No auth)* | Metrics Engine |
+| **MinIO Console** | `http://localhost:9001` | `minioadmin` / `minioadmin` | Object Storage Console |
+| **MailHog / Mailpit** | `http://localhost:8025` | *(No auth)* | Local SMTP Email Viewer |
+
+---
+
+## 🧪 Testing & Quality Assurance
+
+```bash
+# Execute unit and integration tests (uses Testcontainers for MySQL and Kafka)
 mvn test
 
-# With coverage report (JaCoCo)
+# Run tests with JaCoCo code coverage report
 mvn verify -Pcoverage
-```
 
-### Production Deployment (Docker Compose)
+# Run Frontend unit & component tests
+cd cms-admin
+npm run test
 
-```bash
-# Pull images from GHCR and start with production settings
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-```
-
-### Kubernetes / k3s Deployment (Helm)
-
-```bash
-# Dry-run to validate the chart renders correctly
-helm template cms ./helm/cms --set secrets.mysqlPassword=mypass
-
-# Install into the 'cms' namespace
-kubectl create namespace cms
-helm install cms ./helm/cms \
-  --namespace cms \
-  --set secrets.mysqlPassword=mypass \
-  --set secrets.minioSecretKey=mysecret \
-  --set secrets.stripeApiKey=sk_live_...
-
-# Upgrade after new image push
-helm upgrade cms ./helm/cms --namespace cms --set global.imageTag=1.2.0
+# Run Frontend Playwright end-to-end tests
+npm run test:e2e
 ```
 
 ---
 
-## CI/CD Pipeline (Phase 9)
+## 📦 High Availability & Kubernetes Deployment
 
-```
-Push to main
-    |
-    +-> [test] mvn test (Testcontainers: real MySQL + Kafka)
-    |       |
-    |       +-> JUnit results published to GitHub Actions UI
-    |
-    +-> [sonar] SonarQube quality gate
-    |
-    +-> [build-push] (main only)
-            |
-            +-> mvn spring-boot:build-image (Paketo Buildpacks)
-            +-> Push to ghcr.io/srijan-deb/cms-<service>:latest
-```
-
-**Required GitHub Actions secrets:**
-
-| Secret | How to get it |
-|---|---|
-| `SONAR_TOKEN` | Generate at [sonarcloud.io](https://sonarcloud.io) -> My Account -> Security |
-| `SONAR_HOST_URL` | `https://sonarcloud.io` (SonarCloud free) or your self-hosted URL |
-| `GITHUB_TOKEN` | Automatically injected by GitHub Actions - no setup needed |
+- **Clustered Docker Compose:**
+  ```bash
+  docker compose -f docker-compose.cluster.yml up -d
+  ```
+- **Kubernetes Helm Chart:**
+  ```bash
+  helm install cms ./helm/cms --namespace cms --create-namespace
+  ```
+- **K3d Local Cluster Deployment:**
+  ```powershell
+  .\k3d-deploy.ps1
+  ```
 
 ---
 
-## Security (Phase 8)
+## 📖 Comprehensive Documentation
 
-- **Rate limiting:** 20 req/s per authenticated user (JWT sub), 5 req/s per IP on `/auth/**`
-  (burst allowances 2x). Returns `429 Too Many Requests` when exhausted.
-- **Bean validation:** All request DTOs have `@NotBlank`, `@Size`, `@Positive`, `@Email`, `@Pattern` constraints.
-  Invalid requests return `400 {"errorCode":"VALIDATION_ERROR","fieldErrors":{...}}`.
-- **Centralized error handling:** `@RestControllerAdvice` on all services - consistent error envelope.
-- **Secrets externalized:** DB passwords, MinIO keys, Stripe API key all read from environment
-  variables. `.env` file is git-ignored. `docker-compose.yml` uses `env_file: .env`.
-- **XSS protection:** Free-text fields (`companyName`) validated with `@Pattern(^[^<>&"']*$)`.
-- **SQLi:** All queries use JPA/Spring Data (prepared statements) - zero `nativeQuery` string concatenation.
-- **Audit logs:** Every mutating action written to `activity_logs` table in each service's database.
+For complete, detailed instructions on API specifications, database schemas, message event schemas, and operational runbooks, refer to:
+- [Complete Project Documentation Handbook](PROJECT_DOCUMENTATION.md)
+- [Client Login Setup Guide](docs/CLIENT_LOGIN_SETUP_GUIDE.md)
+- [Production Readiness Roadmap](docs/PRODUCTION_READINESS_ROADMAP.md)
 
 ---
 
-## Observability (Phase 7)
+## 📄 License
 
-| Tool | URL | What it shows |
-|---|---|---|
-| Jaeger | http://localhost:16686 | Distributed traces: Gateway -> Service -> Kafka -> Notification |
-| Prometheus | http://localhost:9090 | Metrics scrape from all 5 services |
-| Grafana | http://localhost:3000 | Dashboards (admin/admin) |
-| Alertmanager | http://localhost:9093 | Alert routing |
-
----
-
-## Project Phases
-
-| Phase | Description | Status |
-|---|---|---|
-| 1 | Foundation (Spring Boot, Keycloak, Docker Compose) | Done |
-| 2 | Client Service (CRUD, Contacts, Addresses) | Done |
-| 3 | Account Service (linking, multi-tenant) | Done |
-| 4 | Billing Service (contracts, invoices, Stripe, MinIO) | Done |
-| 5 | Notification Service (Kafka consumer, email/SMS) | Done |
-| 6 | Support Tickets + Circuit Breaker + Resilience4j | Done |
-| 7 | Observability (Jaeger, Prometheus, Grafana) | Done |
-| 8 | Security Hardening (rate limiting, validation, secrets) | Done |
-| 9 | CI/CD (GitHub Actions, SonarQube, GHCR, Helm) | Done |
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.

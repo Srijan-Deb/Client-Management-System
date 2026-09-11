@@ -33,6 +33,7 @@ import java.net.URI;
 public class ClientController {
 
     private final ClientService clientService;
+    private final com.cms.client.security.ClientSecurityService clientSecurityService;
 
     /**
      * Create a new client.
@@ -53,10 +54,20 @@ public class ClientController {
     }
 
     /**
+     * Get the client profile of the currently authenticated client user.
+     */
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('client')")
+    public ResponseEntity<ClientResponse> getMyProfile(@AuthenticationPrincipal Jwt jwt) {
+        Long clientId = clientSecurityService.resolveClientId(jwt);
+        return ResponseEntity.ok(clientService.getClientById(clientId));
+    }
+
+    /**
      * Get a single client by ID â€” Redis cache-aside, falls back to MySQL.
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('admin', 'account_manager', 'support_agent')")
+    @PreAuthorize("hasAnyRole('admin', 'account_manager', 'support_agent') or (hasRole('client') and @clientSecurityService.isOwner(principal, #id))")
     public ResponseEntity<ClientResponse> getClient(@PathVariable Long id) {
         return ResponseEntity.ok(clientService.getClientById(id));
     }
@@ -94,7 +105,7 @@ public class ClientController {
      * Get activity logs for a client.
      */
     @GetMapping("/{id}/activity")
-    @PreAuthorize("hasAnyRole('admin', 'account_manager', 'support_agent')")
+    @PreAuthorize("hasAnyRole('admin', 'account_manager', 'support_agent') or (hasRole('client') and @clientSecurityService.isOwner(principal, #id))")
     public ResponseEntity<java.util.List<com.cms.client.dto.response.ActivityLogResponse>> getActivityLogs(@PathVariable Long id) {
         return ResponseEntity.ok(clientService.getClientActivityLogs(id));
     }

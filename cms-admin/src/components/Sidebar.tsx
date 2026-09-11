@@ -6,7 +6,7 @@ const navItems = [
     label: 'Dashboard',
     path: '/',
     icon: '⊞',
-    roles: ['admin', 'account_manager', 'support_agent'],
+    roles: ['admin', 'account_manager', 'support_agent', 'client'],
   },
   {
     label: 'Clients',
@@ -24,13 +24,13 @@ const navItems = [
     label: 'Billing',
     path: '/billing',
     icon: '💳',
-    roles: ['admin', 'account_manager'],
+    roles: ['admin', 'account_manager', 'client'],
   },
   {
     label: 'Support',
     path: '/support',
     icon: '🎫',
-    roles: ['admin', 'support_agent', 'account_manager'],
+    roles: ['admin', 'support_agent', 'account_manager', 'client'],
   },
   {
     label: 'Users',

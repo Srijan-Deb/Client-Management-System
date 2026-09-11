@@ -4,6 +4,10 @@ import type {
   ClientSummary,
   CreateClientRequest,
   UpdateClientRequest,
+  ContactRequest,
+  ContactResponse,
+  AddressRequest,
+  AddressResponse,
   Page,
 } from '../types/client';
 
@@ -19,9 +23,24 @@ export const clientApi = {
   get: (id: number): Promise<Client> =>
     api.get(`${BASE}/${id}`).then((r) => r.data),
 
+  getMe: (): Promise<Client> =>
+    api.get(`${BASE}/me`).then((r) => r.data),
+
   create: (body: CreateClientRequest): Promise<Client> =>
     api.post(BASE, body).then((r) => r.data),
 
   update: (id: number, body: UpdateClientRequest): Promise<Client> =>
     api.put(`${BASE}/${id}`, body).then((r) => r.data),
+
+  addContact: (clientId: number, body: ContactRequest): Promise<ContactResponse> =>
+    api.post(`${BASE}/${clientId}/contacts`, body).then((r) => r.data),
+
+  deleteContact: (clientId: number, contactId: number): Promise<void> =>
+    api.delete(`${BASE}/${clientId}/contacts/${contactId}`).then((r) => r.data),
+
+  addAddress: (clientId: number, body: AddressRequest): Promise<AddressResponse> =>
+    api.post(`${BASE}/${clientId}/addresses`, body).then((r) => r.data),
+
+  deleteAddress: (clientId: number, addressId: number): Promise<void> =>
+    api.delete(`${BASE}/${clientId}/addresses/${addressId}`).then((r) => r.data),
 };

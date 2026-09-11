@@ -21,6 +21,7 @@
         <module>account-service</module>
         <module>billing-service</module>
         <module>notification-service</module>
+        <module>analytics-service</module>
     </modules>
 
     <!-- ===================== Properties ========================= -->
@@ -42,6 +43,7 @@
 
         <!-- Utilities -->
         <lombok.version>1.18.46</lombok.version>
+        <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <jackson.version>2.17.2</jackson.version>
 
@@ -172,12 +174,38 @@
                                 <version>${lombok.version}</version>
                             </path>
                             <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok-mapstruct-binding</artifactId>
+                                <version>${lombok-mapstruct-binding.version}</version>
+                            </path>
+                            <path>
                                 <groupId>org.mapstruct</groupId>
                                 <artifactId>mapstruct-processor</artifactId>
                                 <version>${mapstruct.version}</version>
                             </path>
                         </annotationProcessorPaths>
                     </configuration>
+                </plugin>
+
+                <!-- Build Helper plugin - registers generated-sources/annotations as compile source root so IDEs resolve generated classes -->
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>3.6.0</version>
+                    <executions>
+                        <execution>
+                            <id>add-generated-sources</id>
+                            <phase>generate-sources</phase>
+                            <goals>
+                                <goal>add-source</goal>
+                            </goals>
+                            <configuration>
+                                <sources>
+                                    <source>${project.build.directory}/generated-sources/annotations</source>
+                                </sources>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
 
                 <!-- Surefire: Java 21 requires explicit permission for Mockito 5's

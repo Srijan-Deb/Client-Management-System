@@ -11,6 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "contracts")
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Contract implements java.io.Serializable {
 
     @Id
@@ -38,9 +39,11 @@ public class Contract implements java.io.Serializable {
     @Column(name = "end_date")
     private LocalDate endDate;
 
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties("contract")
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL)
     private List<Subscription> subscriptions = new ArrayList<>();
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL)
     private List<Invoice> invoices = new ArrayList<>();
 

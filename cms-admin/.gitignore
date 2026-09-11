@@ -22,3 +22,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Testing & Coverage
+test-results/
+playwright-report/
+blob-report/
+coverage/
+
+# Environment
+.env
+.env.*
+!.env.example
+

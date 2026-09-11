@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useAuth } from '../auth/AuthProvider';
 import { useProducts, useInvoices } from '../hooks/useBilling';
 import { TableSkeleton } from '../components/TableSkeleton';
 import PaymentModal from '../components/PaymentModal';
@@ -18,6 +19,7 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 const BillingPage = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('products');
   const [payingInvoice, setPayingInvoice] = useState<Invoice | null>(null);
 
@@ -43,7 +45,7 @@ const BillingPage = () => {
 
   const invoiceStatusChartData = useMemo(() => {
     const counts: Record<string, number> = {};
-    invoices.forEach((inv) => { counts[inv.status] = (counts[inv.status] ?? 0) + 1; });
+    invoices.forEach((inv: Invoice) => { counts[inv.status] = (counts[inv.status] ?? 0) + 1; });
     const COLORS: Record<string, string> = {
       PAID: '#10b981', PENDING: '#f59e0b', OVERDUE: '#ef4444', CANCELLED: '#94a3b8',
     };
@@ -52,7 +54,7 @@ const BillingPage = () => {
 
   const invoiceAmountByStatus = useMemo(() => {
     const totals: Record<string, number> = {};
-    invoices.forEach((inv) => {
+    invoices.forEach((inv: Invoice) => {
       totals[inv.status] = (totals[inv.status] ?? 0) + Number(inv.totalAmount);
     });
     const COLORS: Record<string, string> = {
@@ -232,7 +234,7 @@ const BillingPage = () => {
                     </td>
                   </tr>
                 )}
-                {invoices.map((inv) => (
+                {invoices.map((inv: Invoice) => (
                   <tr key={inv.id} className="tr">
                     <td className="td" style={{ fontWeight: 600 }}>{inv.invoiceNumber}</td>
                     <td className="td td-secondary">
@@ -277,7 +279,7 @@ const BillingPage = () => {
       {payingInvoice && (
         <PaymentModal
           invoice={payingInvoice}
-          clientEmail=""   // populated from client context when embedded on client detail
+          clientEmail={user?.email}
           onClose={() => setPayingInvoice(null)}
         />
       )}

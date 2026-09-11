@@ -2,20 +2,25 @@
 
 ## Supported Versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+The following versions of the Client Management System (CMS) are currently maintained with security updates:
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| 1.0.x   | :white_check_mark: |
+| < 1.0   | :x:                |
+
+## Security Overview
+
+The Client Management System enforces enterprise-grade security standards across all layers:
+- **Stateless OAuth2 / OpenID Connect**: Authenticated via Keycloak with RS256-signed JWT tokens.
+- **Role-Based Access Control (RBAC)**: Fine-grained permissions enforced at API Gateway (`api-gateway`) and resource servers with Spring Security `@PreAuthorize`.
+- **Tenant & Client Isolation**: B2B accounts and clients can only access resources belonging to their organization.
+- **Secrets Management**: Sensitive credentials and private keys are externalized through environment variables and never checked into source control.
 
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+If you discover a potential security vulnerability within this project:
+1. **Do not disclose publicly**: Avoid opening public GitHub issues for security vulnerabilities.
+2. **Submit a report**: Contact the maintainers directly via security advisory or email at `srijandeb07@gmail.com` with full reproduction steps and impact assessment.
+3. **Response Timeline**: Maintainers will acknowledge reports within 48 hours and work on a coordinated fix and release timeline.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.

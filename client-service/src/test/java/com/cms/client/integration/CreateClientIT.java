@@ -56,6 +56,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 class CreateClientIT {
 
     @Container
+    @SuppressWarnings("resource")
     static final MySQLContainer<?> mysql =
             new MySQLContainer<>("mysql:8.0")
                     .withDatabaseName("cms_client")
@@ -171,13 +172,15 @@ class CreateClientIT {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        ResponseEntity<java.util.Map> response = restTemplate.postForEntity(
-                "/api/v1/clients", new HttpEntity<>(req, headers), java.util.Map.class);
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                "/api/v1/clients",
+                HttpMethod.POST,
+                new HttpEntity<>(req, headers),
+                new org.springframework.core.ParameterizedTypeReference<Map<String, Object>>() {});
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         
-        @SuppressWarnings("unchecked")
-        java.util.Map<String, Object> body = response.getBody();
+        Map<String, Object> body = response.getBody();
         assertThat(body).isNotNull();
         assertThat(body).containsKey("errorCode");
         assertThat(body.get("errorCode")).isEqualTo("DUPLICATE_EMAIL");

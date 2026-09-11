@@ -28,7 +28,7 @@ public class GatewaySecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
                         // Gateway health and info always permitted
-                        .pathMatchers("/actuator/health", "/actuator/info").permitAll()
+                        .pathMatchers("/actuator/health", "/actuator/info", "/actuator/prometheus").permitAll()
                         // Keycloak token endpoint proxied through gateway (optional convenience)
                         .pathMatchers(HttpMethod.POST, "/realms/*/protocol/openid-connect/token").permitAll()
                         // Allow CORS preflight requests

@@ -55,11 +55,24 @@ public class UserSyncFilter extends OncePerRequestFilter {
                 String email      = jwt.getClaimAsString("email");
                 String fullName   = jwt.getClaimAsString("name");
 
+                if (email == null) {
+                    email = jwt.getClaimAsString("preferred_username");
+                }
+                if (email == null && keycloakId != null) {
+                    email = keycloakId + "@cms.local";
+                }
+                if (fullName == null) {
+                    fullName = jwt.getClaimAsString("preferred_username");
+                    if (fullName == null) {
+                        fullName = email;
+                    }
+                }
+
                 if (keycloakId != null && email != null) {
                     jdbc.update(UPSERT_SQL,
                             keycloakId,
                             email,
-                            fullName != null ? fullName : email);
+                            fullName);
                     log.debug("UserSync: upserted user keycloak_id={}", keycloakId);
                 }
             } catch (Exception ex) {

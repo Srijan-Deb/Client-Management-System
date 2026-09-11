@@ -3,11 +3,11 @@ import { ticketsApi } from '../api/tickets';
 import type { TicketRequest, TicketCommentRequest } from '../types/ticket';
 
 // ─── Tickets ────────────────────────────────────────────────────────────────
-export const useTickets = (clientId?: number) =>
+export const useTickets = (clientId?: number, options?: { enabled?: boolean }) =>
   useQuery({
     queryKey: ['tickets', clientId],
     queryFn: () => ticketsApi.list(clientId),
-    enabled: true,
+    enabled: options?.enabled ?? true,
   });
 
 export const useTicket = (ticketId: number) =>

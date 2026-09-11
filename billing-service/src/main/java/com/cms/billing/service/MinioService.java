@@ -1,9 +1,14 @@
 package com.cms.billing.service;
 
+import io.minio.BucketExistsArgs;
+import io.minio.GetPresignedObjectUrlArgs;
+import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.http.Method;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -26,9 +31,9 @@ public class MinioService {
     }
 
     public String uploadPdf(String objectKey, byte[] pdfBytes) throws Exception {
-        boolean found = minioClient.bucketExists(io.minio.BucketExistsArgs.builder().bucket(bucketName).build());
+        boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
         if (!found) {
-            minioClient.makeBucket(io.minio.MakeBucketArgs.builder().bucket(bucketName).build());
+            minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
         }
 
         try (InputStream bais = new ByteArrayInputStream(pdfBytes)) {
@@ -42,5 +47,16 @@ public class MinioService {
             );
         }
         return objectKey;
+    }
+
+    public String getPresignedUrl(String objectKey) throws Exception {
+        return minioClient.getPresignedObjectUrl(
+                GetPresignedObjectUrlArgs.builder()
+                        .method(Method.GET)
+                        .bucket(bucketName)
+                        .object(objectKey)
+                        .expiry(7, TimeUnit.DAYS)
+                        .build()
+        );
     }
 }

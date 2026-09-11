@@ -16,9 +16,25 @@ export interface ClientSummary {
   createdAt: string;
 }
 
+export type ContactType = 'PRIMARY' | 'SECONDARY' | 'BILLING' | 'TECHNICAL';
+export type AddressType = 'BILLING' | 'SHIPPING' | 'BRANCH' | 'REGISTERED';
+
 export interface ContactResponse {
   contactId: number;
-  name: string;
+  contactType?: ContactType;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+  email: string;
+  phone?: string;
+  role?: string;
+}
+
+export interface ContactRequest {
+  contactType?: ContactType;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
   email: string;
   phone?: string;
   role?: string;
@@ -26,11 +42,27 @@ export interface ContactResponse {
 
 export interface AddressResponse {
   addressId: number;
-  street: string;
+  addressType?: AddressType;
+  line1?: string;
+  line2?: string;
+  street?: string;
   city: string;
   state?: string;
   country: string;
   postalCode?: string;
+  primary?: boolean;
+}
+
+export interface AddressRequest {
+  addressType?: AddressType;
+  line1?: string;
+  line2?: string;
+  street?: string;
+  city: string;
+  state?: string;
+  country: string;
+  postalCode?: string;
+  primary?: boolean;
 }
 
 export interface Client extends ClientSummary {

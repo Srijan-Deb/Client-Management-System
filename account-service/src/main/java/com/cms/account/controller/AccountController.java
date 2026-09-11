@@ -6,11 +6,16 @@ import com.cms.account.service.AccountService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+
 
 /**
  * REST controller for account management.
@@ -67,5 +72,23 @@ public class AccountController {
     @PreAuthorize("hasAnyRole('admin', 'account_manager', 'support_agent')")
     public ResponseEntity<AccountResponse> getAccount(@PathVariable Long id) {
         return ResponseEntity.ok(accountService.getAccountById(id));
+    }
+
+    /**
+     * Paginated list of all accounts — used by the admin dashboard Accounts page.
+     *
+     * @param search optional search term (matched against name or email)
+     * @param page   0-indexed page number (default 0)
+     * @param size   page size (default 20)
+     * @return paginated {@link AccountResponse} list
+     */
+    @GetMapping
+    @PreAuthorize("hasAnyRole('admin', 'account_manager', 'support_agent')")
+    public ResponseEntity<Page<AccountResponse>> listAccounts(
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return ResponseEntity.ok(accountService.getAllAccounts(search, pageable));
     }
 }

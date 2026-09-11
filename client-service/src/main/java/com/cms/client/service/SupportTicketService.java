@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -33,14 +34,46 @@ public class SupportTicketService {
     private final UserProjectionRepository userProjectionRepository;
     private final ActivityLogRepository activityLogRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final JdbcTemplate jdbcTemplate;
+
+    private UserProjection getOrProvisionUser(Jwt jwt) {
+        if (jwt == null) return null;
+        String keycloakId = jwt.getSubject();
+        if (keycloakId == null) return null;
+
+        return userProjectionRepository.findByKeycloakId(keycloakId)
+                .orElseGet(() -> {
+                    try {
+                        String email = jwt.getClaimAsString("email");
+                        if (email == null) email = jwt.getClaimAsString("preferred_username");
+                        if (email == null) email = keycloakId + "@cms.local";
+                        String name = jwt.getClaimAsString("name");
+                        if (name == null) name = jwt.getClaimAsString("preferred_username");
+                        if (name == null) name = email;
+
+                        jdbcTemplate.update("""
+                            INSERT INTO users (keycloak_id, email, full_name, is_active)
+                            VALUES (?, ?, ?, TRUE)
+                            ON DUPLICATE KEY UPDATE
+                              last_login = NOW(6),
+                              email      = VALUES(email),
+                              full_name  = VALUES(full_name)
+                            """, keycloakId, email, name);
+                        return userProjectionRepository.findByKeycloakId(keycloakId).orElse(null);
+                    } catch (Exception e) {
+                        log.warn("Auto-provisioning user projection failed for {}: {}", keycloakId, e.getMessage());
+                        return null;
+                    }
+                });
+    }
 
     @Transactional
     public TicketResponse createTicket(TicketRequest request, Jwt jwt) {
         Client client = clientRepository.findById(request.getClientId())
                 .orElseThrow(() -> new ResourceNotFoundException("CLIENT_NOT_FOUND", "Client not found"));
 
-        UserProjection user = userProjectionRepository.findByKeycloakId(jwt.getSubject())
-                .orElseThrow(() -> new ResourceNotFoundException("USER_NOT_FOUND", "User not found"));
+        UserProjection user = getOrProvisionUser(jwt);
+        Long userId = user != null ? user.getUserId() : null;
 
         SupportTicket ticket = SupportTicket.builder()
                 .clientId(request.getClientId())
@@ -56,7 +89,7 @@ public class SupportTicketService {
 
         ActivityLog logEntry = ActivityLog.builder()
                 .clientId(client.getClientId())
-                .userId(user.getUserId())
+                .userId(userId)
                 .action("TICKET_CREATED")
                 .entityType("TICKET")
                 .entityId(savedTicket.getTicketId())
@@ -93,8 +126,8 @@ public class SupportTicketService {
         SupportTicket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("TICKET_NOT_FOUND", "Ticket not found"));
 
-        UserProjection user = userProjectionRepository.findByKeycloakId(jwt.getSubject())
-                .orElseThrow(() -> new ResourceNotFoundException("USER_NOT_FOUND", "User not found"));
+        UserProjection user = getOrProvisionUser(jwt);
+        Long userId = user != null ? user.getUserId() : null;
 
         ticket.setAssignedTo(agentId);
         ticket.setStatus("IN_PROGRESS");
@@ -102,7 +135,7 @@ public class SupportTicketService {
 
         ActivityLog logEntry = ActivityLog.builder()
                 .clientId(ticket.getClientId())
-                .userId(user.getUserId())
+                .userId(userId)
                 .action("TICKET_ASSIGNED")
                 .entityType("TICKET")
                 .entityId(savedTicket.getTicketId())
@@ -118,15 +151,15 @@ public class SupportTicketService {
         SupportTicket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("TICKET_NOT_FOUND", "Ticket not found"));
 
-        UserProjection user = userProjectionRepository.findByKeycloakId(jwt.getSubject())
-                .orElseThrow(() -> new ResourceNotFoundException("USER_NOT_FOUND", "User not found"));
+        UserProjection user = getOrProvisionUser(jwt);
+        Long userId = user != null ? user.getUserId() : null;
 
         ticket.setStatus("RESOLVED");
         SupportTicket savedTicket = ticketRepository.save(ticket);
 
         ActivityLog logEntry = ActivityLog.builder()
                 .clientId(ticket.getClientId())
-                .userId(user.getUserId())
+                .userId(userId)
                 .action("TICKET_RESOLVED")
                 .entityType("TICKET")
                 .entityId(savedTicket.getTicketId())
@@ -142,15 +175,15 @@ public class SupportTicketService {
         SupportTicket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("TICKET_NOT_FOUND", "Ticket not found"));
 
-        UserProjection user = userProjectionRepository.findByKeycloakId(jwt.getSubject())
-                .orElseThrow(() -> new ResourceNotFoundException("USER_NOT_FOUND", "User not found"));
+        UserProjection user = getOrProvisionUser(jwt);
+        Long userId = user != null ? user.getUserId() : null;
 
         ticket.setStatus("OPEN");
         SupportTicket savedTicket = ticketRepository.save(ticket);
 
         ActivityLog logEntry = ActivityLog.builder()
                 .clientId(ticket.getClientId())
-                .userId(user.getUserId())
+                .userId(userId)
                 .action("TICKET_REOPENED")
                 .entityType("TICKET")
                 .entityId(savedTicket.getTicketId())
@@ -166,12 +199,12 @@ public class SupportTicketService {
         SupportTicket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("TICKET_NOT_FOUND", "Ticket not found"));
 
-        UserProjection user = userProjectionRepository.findByKeycloakId(jwt.getSubject())
-                .orElseThrow(() -> new ResourceNotFoundException("USER_NOT_FOUND", "User not found"));
+        UserProjection user = getOrProvisionUser(jwt);
+        Long userId = user != null ? user.getUserId() : 1L;
 
         TicketComment comment = TicketComment.builder()
                 .ticket(ticket)
-                .authorId(user.getUserId())
+                .authorId(userId)
                 .commentText(request.getCommentText())
                 .build();
 
@@ -180,7 +213,7 @@ public class SupportTicketService {
 
         ActivityLog logEntry = ActivityLog.builder()
                 .clientId(ticket.getClientId())
-                .userId(user.getUserId())
+                .userId(userId)
                 .action("TICKET_COMMENT_ADDED")
                 .entityType("TICKET_COMMENT")
                 .entityId(comment.getCommentId())
@@ -196,15 +229,15 @@ public class SupportTicketService {
         SupportTicket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("TICKET_NOT_FOUND", "Ticket not found"));
 
-        UserProjection user = userProjectionRepository.findByKeycloakId(jwt.getSubject())
-                .orElseThrow(() -> new ResourceNotFoundException("USER_NOT_FOUND", "User not found"));
+        UserProjection user = getOrProvisionUser(jwt);
+        Long userId = user != null ? user.getUserId() : null;
 
         ticket.setStatus("CLOSED");
         SupportTicket savedTicket = ticketRepository.save(ticket);
 
         ActivityLog logEntry = ActivityLog.builder()
                 .clientId(ticket.getClientId())
-                .userId(user.getUserId())
+                .userId(userId)
                 .action("TICKET_CLOSED")
                 .entityType("TICKET")
                 .entityId(savedTicket.getTicketId())

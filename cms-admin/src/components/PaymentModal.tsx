@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
+import { useAuth } from '../auth/AuthProvider';
 import { useProcessPayment } from '../hooks/useBilling';
+import { useClient } from '../hooks/useClients';
 import type { Invoice, PaymentResponse } from '../types/billing';
 
 // Generate a UUID v4 client-side (no dependency needed)
@@ -13,12 +15,16 @@ function generateUUID(): string {
 
 interface PaymentModalProps {
   invoice: Invoice;
-  clientEmail: string;
+  clientEmail?: string;
   onClose: () => void;
 }
 
-const PaymentModal = ({ invoice, clientEmail, onClose }: PaymentModalProps) => {
+const PaymentModal = ({ invoice, clientEmail: providedEmail, onClose }: PaymentModalProps) => {
+  const { user } = useAuth();
   const mutation = useProcessPayment();
+  const { data: client, isLoading: isClientLoading } = useClient(invoice.clientId);
+  
+  const clientEmail = providedEmail || user?.email || client?.email || '';
 
   // UUID is generated once when the modal mounts — reused on retry
   // so that if the first request succeeded but timed out, the backend
@@ -153,7 +159,12 @@ const PaymentModal = ({ invoice, clientEmail, onClose }: PaymentModalProps) => {
 
               <div className="form-group">
                 <label className="form-label">Recipient Email</label>
-                <input className="form-input" value={clientEmail} readOnly style={{ opacity: 0.7 }} />
+                <input 
+                  className="form-input" 
+                  value={isClientLoading && !providedEmail && !user?.email ? 'Loading email...' : clientEmail} 
+                  readOnly 
+                  style={{ opacity: 0.7 }} 
+                />
               </div>
 
               <div style={{
@@ -178,7 +189,7 @@ const PaymentModal = ({ invoice, clientEmail, onClose }: PaymentModalProps) => {
                 <button
                   className="btn btn-primary"
                   onClick={handlePay}
-                  disabled={mutation.isPending || submitted}
+                  disabled={mutation.isPending || submitted || !clientEmail}
                 >
                   {mutation.isPending ? 'Processing…' : `Pay ${invoice.currency} ${Number(invoice.totalAmount).toFixed(2)}`}
                 </button>

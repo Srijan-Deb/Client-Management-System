@@ -2,6 +2,8 @@
 -- CMS MySQL Initialisation Script
 -- Runs once on first container start (docker-entrypoint-initdb.d)
 -- Creates all application schemas + grants to cms_user
+-- NOTE: cms_user uses mysql_native_password so Java JDBC can
+--       connect without SSL from outside the Docker network.
 -- =============================================================
 
 -- Client Service schema
@@ -29,12 +31,17 @@ CREATE DATABASE IF NOT EXISTS keycloak_db
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
+-- Re-create cms_user with mysql_native_password for JDBC compatibility
+-- (MySQL 8 defaults to caching_sha2_password which blocks non-SSL Java clients)
+ALTER USER 'cms_user'@'%' IDENTIFIED WITH mysql_native_password BY 'cms_pass';
+
 -- Grant all privileges on application schemas to the app user
 GRANT ALL PRIVILEGES ON cms_client.*       TO 'cms_user'@'%';
 GRANT ALL PRIVILEGES ON cms_account.*      TO 'cms_user'@'%';
 GRANT ALL PRIVILEGES ON cms_billing.*      TO 'cms_user'@'%';
 GRANT ALL PRIVILEGES ON cms_notification.* TO 'cms_user'@'%';
 GRANT ALL PRIVILEGES ON keycloak_db.*       TO 'cms_user'@'%';
+GRANT XA_RECOVER_ADMIN ON *.*              TO 'cms_user'@'%';
 
 -- Create replication user for scalability proof
 CREATE USER IF NOT EXISTS 'replicator'@'%' IDENTIFIED BY 'repl_pass';

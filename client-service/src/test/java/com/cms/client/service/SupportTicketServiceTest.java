@@ -42,6 +42,7 @@ class SupportTicketServiceTest {
     @Mock private ClientRepository clientRepository;
     @Mock private UserProjectionRepository userProjectionRepository;
     @Mock private KafkaTemplate<String, Object> kafkaTemplate;
+    @Mock private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     @InjectMocks
     private SupportTicketService ticketService;

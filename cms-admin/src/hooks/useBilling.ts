@@ -11,22 +11,31 @@ export const useProducts = () =>
   });
 
 // ─── Invoices ───────────────────────────────────────────────────────────────
-export const useInvoices = (clientId?: number) =>
+export const useInvoices = (clientId?: number, options?: { enabled?: boolean }) =>
   useQuery({
     queryKey: ['billing', 'invoices', clientId],
     queryFn: () => billingApi.listInvoices(clientId),
-    enabled: true,
+    enabled: options?.enabled ?? true,
     throwOnError: false, // Handle inline — don't crash the ErrorBoundary
   });
 
 
 // ─── Contracts ──────────────────────────────────────────────────────────────
+export const useContracts = (clientId?: number) =>
+  useQuery({
+    queryKey: ['billing', 'contracts', clientId],
+    queryFn: () => billingApi.listContracts(clientId),
+    enabled: true,
+    throwOnError: false,
+  });
+
 export const useCreateContract = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: ContractRequest) => billingApi.createContract(body),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['billing', 'invoices'] });
+      qc.invalidateQueries({ queryKey: ['billing', 'contracts', variables.clientId] });
     },
   });
 };

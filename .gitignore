@@ -57,7 +57,28 @@ sonar-project.properties
 .gradle/
 build/
 
-# ── Node (if a frontend is added later) ──────────
+# ── Node & Frontend ──────────────────────────────
 node_modules/
+dist/
+dist-ssr/
 npm-debug.log*
 yarn-error.log*
+test-results/
+playwright-report/
+blob-report/
+coverage/
+
+# ── AI Agents, Prompts, & Workspace Artifacts ────
+.agents/
+.claude/
+.gemini/
+artifacts/
+scratch/
+implementation_plan.md
+walkthrough.md
+*.plan.md
+*prompt.md
+*.prompt
+hs_err_pid*
+replay_pid*
+

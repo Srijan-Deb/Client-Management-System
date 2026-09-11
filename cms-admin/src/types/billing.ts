@@ -31,6 +31,19 @@ export interface ContractResponse {
   startDate: string; // ISO LocalDate
 }
 
+// ─── ContractSummary ← GET /api/v1/billing/contracts ─────────────────────────
+export interface ContractSummary {
+  id: number;
+  clientId: number;
+  accountId: number;
+  status: string;         // "ACTIVE" | "CANCELLED" | etc.
+  totalValue: number;
+  startDate: string;
+  endDate: string | null;
+  pdfUrl: string | null;
+  createdAt: string;
+}
+
 // ─── SubscriptionRequest → POST /api/v1/billing/subscriptions ────────────────
 export interface SubscriptionRequest {
   clientId: number;

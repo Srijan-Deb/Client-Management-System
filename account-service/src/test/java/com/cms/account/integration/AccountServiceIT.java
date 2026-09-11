@@ -41,6 +41,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 class AccountServiceIT {
 
     @Container
+    @SuppressWarnings("resource")
     static final MySQLContainer<?> mysql =
             new MySQLContainer<>("mysql:8.0")
                     .withDatabaseName("cms_account")
@@ -154,15 +155,14 @@ class AccountServiceIT {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer fake-test-token");
 
-        ResponseEntity<java.util.Map> response = restTemplate.exchange(
+        ResponseEntity<java.util.Map<String, Object>> response = restTemplate.exchange(
                 "/api/v1/accounts/999999",
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
-                java.util.Map.class);
+                new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {});
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        
-        @SuppressWarnings("unchecked")
+
         java.util.Map<String, Object> body = response.getBody();
         assertThat(body).isNotNull();
         assertThat(body).containsKey("errorCode");

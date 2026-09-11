@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:mysql://cms-mysql-primary:3306/cms_notification?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+
+  data:
+    redis:
+      host: "" # Clear standalone host
+      port: 0
+      sentinel:
+        master: mymaster
+        nodes: cms-redis-sentinel-1:26379,cms-redis-sentinel-2:26379,cms-redis-sentinel-3:26379
+
+  kafka:
+    bootstrap-servers: cms-kafka-1:9092,cms-kafka-2:9092,cms-kafka-3:9092
