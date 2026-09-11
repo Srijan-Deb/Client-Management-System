@@ -21,6 +21,6 @@ The Client Management System enforces enterprise-grade security standards across
 
 If you discover a potential security vulnerability within this project:
 1. **Do not disclose publicly**: Avoid opening public GitHub issues for security vulnerabilities.
-2. **Submit a report**: Contact the maintainers directly via security advisory or email at `srijandeb07@gmail.com` with full reproduction steps and impact assessment.
+2. **Submit a report**: Contact the maintainers directly via security advisory or email at `srijan159753@gmail.com` with full reproduction steps and impact assessment.
 3. **Response Timeline**: Maintainers will acknowledge reports within 48 hours and work on a coordinated fix and release timeline.
 
