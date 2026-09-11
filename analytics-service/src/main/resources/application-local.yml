@@ -1,9 +1,6 @@
 spring:
   datasource:
-    url: jdbc:ch://127.0.0.1:8123/default?user=default&password=clickhouse&http_connection_provider=HTTP_CLIENT
-    driver-class-name: com.clickhouse.jdbc.ClickHouseDriver
-    username: default
-    password: "clickhouse"
+    url: ${CLICKHOUSE_LOCAL_URL:jdbc:ch://127.0.0.1:8123/default?http_connection_provider=HTTP_CLIENT}
     hikari:
       initializationFailTimeout: -1
       connection-test-query: SELECT 1

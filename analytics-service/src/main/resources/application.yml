@@ -8,10 +8,10 @@ spring:
     name: analytics-service
 
   datasource:
-    url: ${CLICKHOUSE_URL:jdbc:ch://cms-clickhouse:8123/default?user=default&password=clickhouse}
+    url: ${CLICKHOUSE_URL:jdbc:ch://cms-clickhouse:8123/default?http_connection_provider=HTTP_CLIENT}
     driver-class-name: com.clickhouse.jdbc.ClickHouseDriver
-    username: default
-    password: "clickhouse"
+    username: ${CLICKHOUSE_USER:default}
+    password: ${CLICKHOUSE_PASSWORD:}
     hikari:
       initializationFailTimeout: -1
       connection-timeout: 60000
